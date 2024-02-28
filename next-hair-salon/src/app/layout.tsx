@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
 import { Inter as FontSans } from "next/font/google";
-import Footer from "../components/Footer";
-import Header from "../components/Header";
+import Footer from "@/components/Footer";
+import Header from "@/components/Header";
 
 import { cn } from "../lib/utils";
 
@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='en' data-theme='cupcake'>
+    <html lang='en' data-theme='retro'>
       <head>
         <title>HairCut</title>
         <meta name='description' content='hairSaloon!"' />
@@ -30,7 +30,9 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
+        <Header></Header>
         <main>{children}</main>
+        <Footer></Footer>
       </body>
     </html>
   );
