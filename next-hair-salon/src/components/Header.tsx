@@ -1,8 +1,8 @@
 // app/Header.tsx
 export default function Header() {
   return (
-    <header className='container mx-auto w-full bg-gray-100'>
-      <div className='navbar bg-base-100'>
+    <header className='container mx-auto w-full  bg-transparent'>
+      <div className='navbar bg-transparent'>
         <div className='flex-1'>
           <a className='btn btn-ghost text-xl'>daisyUI</a>
         </div>
