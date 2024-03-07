@@ -1,27 +1,31 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, ChangeEvent } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronLeft,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 
-function CalendarSelect({ onSelect }) {
+interface CalendarSelectProps {
+  onSelect?: (selectedDate: Date) => void;
+}
+
+function CalendarSelect({ onSelect }: CalendarSelectProps) {
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
   const [month, setMonth] = useState(currentMonth);
   const [year, setYear] = useState(currentYear);
 
-  const handleDayClick = (day) => {
+  const handleDayClick = (day: number) => {
     let selectedDate = new Date(year, month, day);
     let formatter = new Intl.DateTimeFormat("no", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
     });
-    selectedDate = formatter.format(selectedDate);
+    let displayDate = formatter.format(selectedDate);
     if (onSelect) {
-      onSelect(selectedDate);
+      onSelect(selectedDate, displayDate);
     }
   };
 
@@ -66,6 +70,12 @@ function CalendarSelect({ onSelect }) {
 }
 
 export default CalendarSelect;
+
+interface RenderCalendarProps {
+  onDayClick: (day: number) => void;
+  month: number;
+  year: number;
+}
 
 function daysInMonth(month, year) {
   return new Date(year, month, 0).getDate();

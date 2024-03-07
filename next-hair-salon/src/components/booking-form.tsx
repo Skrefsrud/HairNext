@@ -10,9 +10,11 @@ import CalendarSelect from "./bookingComponents/CalendarSelect";
 import SlideInContainer from "./SlideInContainer";
 
 export function BookingForm() {
-  const handleDateSelection = (selectedDate) => {
+  const handleDateSelection = (selectedDate: Date, displayDate: String) => {
     console.log("Selected date:", selectedDate);
+    console.log("Display date: ", displayDate);
   };
+
   return (
     <div className='bg-white w-1/2 h-2/3'>
       <SlideInContainer>
