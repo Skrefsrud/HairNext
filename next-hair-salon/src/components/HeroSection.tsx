@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "./ui/button";
 import { buttonVariants } from "./ui/button";
+import FloatingImages from "./FloatingImages";
 
 export default function HeroSection() {
   return (
@@ -22,13 +23,6 @@ export default function HeroSection() {
               <Button className='px-6 py-6 text-lg '>Book Now</Button>
             </Link>
           </div>
-          <Image
-            alt='Hero'
-            className='mx-auto aspect-video overflow-hidden rounded-xl object-bottom'
-            src='/cutMachine.jpg' // Your image source
-            width={600} // Required!
-            height={320} // Required!
-          />
         </div>
       </div>
     </section>
