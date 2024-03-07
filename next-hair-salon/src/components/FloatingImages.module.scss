@@ -1,5 +1,5 @@
 .main {
-  height: 110vh;
+  height: 100vh;
   width: 100vw;
   overflow: hidden;
   position: relative;
@@ -11,9 +11,9 @@
     font-size: 18px;
   }
   .plane {
-    width: 60%;
+    width: 100%;
     height: 100%;
-    left: 40%;
+    left: 0%;
     position: absolute;
     img {
       position: absolute;
@@ -36,7 +36,7 @@
           top: 0%;
         }
         &:nth-of-type(2) {
-          left: 70%;
+          left: 60%;
           top: 5%;
         }
         &:nth-of-type(3) {
@@ -57,7 +57,7 @@
           top: 35%;
         }
         &:nth-of-type(3) {
-          left: 75%;
+          left: 65%;
           top: 60%;
         }
       }

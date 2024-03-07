@@ -82,7 +82,6 @@ export default function FloatingImages() {
         <Image src={floating7} alt='image' width={150} />
       </div>
       <div className={styles.title}></div>
-      <HeroSection></HeroSection>
     </main>
   );
 }

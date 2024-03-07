@@ -5,8 +5,13 @@ import FloatingImages from "@/components/FloatingImages";
 
 export default function Home() {
   return (
-    <div className='flex flex-col gap-11'>
-      <FloatingImages></FloatingImages>
+    <div className='grid grid-cols-8'>
+      <div className='col-span-2 flex flex-col items-center justify-center ml-8'>
+        <HeroSection></HeroSection>
+      </div>
+      <div className='col-span-3'>
+        <FloatingImages></FloatingImages>
+      </div>
     </div>
   );
 }
