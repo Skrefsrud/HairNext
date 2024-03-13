@@ -1,19 +1,21 @@
 "use client";
+// @ts-check
 
 import CalendarSelect from "./bookingComponents/CalendarSelect";
 import SlideInContainer from "./SlideInContainer";
 import React, { useState } from "react";
 import Stats from "./Stats";
 import TimeSelector from "./bookingComponents/TimeSelect";
+import TypeSelector from "./bookingComponents/TypeSelector";
+
+export enum BookingType {
+  HERREKLIPP = "herreklipp",
+  DAMEKLIPP = "dameklipp",
+  HÅRFARGING = "hårfarging",
+  SKJEGGTRIMM = "skjeggtrim",
+}
 
 export function BookingForm() {
-  enum BookingType {
-    HERREKLIPP = "herreklipp",
-    DAMEKLIPP = "dameklipp",
-    HÅRFARGING = "hårfarging",
-    SKJEGGTRIMM = "skjeggtrim",
-  }
-
   enum AnimationDirection {
     TOP = "top",
     BOTTOM = "bottom",
@@ -22,32 +24,26 @@ export function BookingForm() {
   //BookingData state
   const [bookingData, setBookingData] = useState({
     employee: {
-      id: Number,
-      employee_name: String,
+      id: null as Number,
+      employee_name: null as String,
     },
     bookingDetails: {
-      date: Date,
-      time: String,
-      bookingType: [BookingType],
-      bookingDuration: Number,
+      date: null as Date,
+      time: null as String,
+      bookingType: null as BookingType[],
+      bookingDuration: null as Number,
     },
     customer: {
-      customer_name: String,
-      phoneNumber: Number,
-      comment: String,
+      customer_name: null as String,
+      phoneNumber: null as Number,
+      comment: null as String,
     },
   });
 
   //Access the bookingData objects
   const { employee, bookingDetails, customer } = bookingData;
 
-  //Generic function to update bookingData
-  function updateBookingData(keyPath, value) {
-    setBookingData((prevBookingData) => ({
-      ...prevBookingData,
-      ...keyPath.reduceRight((acc, key) => ({ [key]: acc }), value),
-    }));
-  }
+  console.log(employee.employee_name); // here i log the employee_name. It returnes 0
 
   //UI Component State
   const [uiState, setUiState] = useState({
@@ -59,12 +55,23 @@ export function BookingForm() {
   //Access the states
   const { selectedOption, previousOption, direction } = uiState;
 
+  //Handling the selections
+
+  const handleTypeSelection = (
+    selectedTypes: BookingType[],
+    intDuration: Number
+  ) => {
+    updateBookingType(selectedTypes);
+    updateBookingDuration(intDuration);
+    incSelectedOption();
+    if (employee.employee_name === null) {
+      console.log(employee.employee_name);
+    }
+  };
+
   const handleDateSelection = (selectedDate: Date, displayDate: String) => {
-    updateBookingData(["bookingDetails", "date"], selectedDate);
-    setUiState({
-      ...uiState,
-      selectedOption: 1,
-    });
+    updateBookingDate(selectedDate);
+    decSelectedOption();
   };
 
   //Handling what component should be rendered based on the selectedOption variable
@@ -76,6 +83,51 @@ export function BookingForm() {
     );
   };
 
+  //helper funcitions
+
+  function incSelectedOption() {
+    setUiState({
+      ...uiState,
+      direction: AnimationDirection.BOTTOM,
+      selectedOption: selectedOption + 1,
+    });
+  }
+  function decSelectedOption() {
+    setUiState({
+      ...uiState,
+      direction: AnimationDirection.TOP,
+      selectedOption: selectedOption - 1,
+    });
+  }
+
+  function updateBookingType(newBookingType: BookingType | BookingType[]) {
+    setBookingData((prevBookingData) => ({
+      ...prevBookingData, // Keep everything in bookingData
+      bookingDetails: {
+        ...prevBookingData.bookingDetails, // Keep everything in bookingDetails
+        bookingType: newBookingType, // Update only bookingType
+      },
+    }));
+  }
+  function updateBookingDuration(newDuration: number) {
+    setBookingData((prevBookingData) => ({
+      ...prevBookingData,
+      bookingDetails: {
+        ...prevBookingData.bookingDetails,
+        bookingDuration: newDuration,
+      },
+    }));
+  }
+  function updateBookingDate(newDate: Date) {
+    setBookingData((prevBookingData) => ({
+      ...prevBookingData,
+      bookingDetails: {
+        ...prevBookingData.bookingDetails,
+        date: newDate,
+      },
+    }));
+  }
+
   return (
     <div className='bg-white w-1/2 h-2/3'>
       <BookingStep
@@ -83,17 +135,23 @@ export function BookingForm() {
         stepIndex={0}
         direction={direction}
       >
-        <CalendarSelect onSelect={handleDateSelection} />
+        <TypeSelector onSubmit={handleTypeSelection}></TypeSelector>
       </BookingStep>
-
       <BookingStep
         selectedOption={selectedOption}
         stepIndex={1}
         direction={direction}
       >
+        <CalendarSelect onSelect={handleDateSelection} />
+      </BookingStep>
+
+      <BookingStep
+        selectedOption={selectedOption}
+        stepIndex={2}
+        direction={direction}
+      >
         <TimeSelector></TimeSelector>
       </BookingStep>
-      <p>{bookingDetails.date.toLocaleString()}</p>
     </div>
   );
 }
