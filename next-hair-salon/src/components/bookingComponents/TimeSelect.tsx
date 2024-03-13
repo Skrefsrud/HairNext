@@ -1,36 +1,24 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 interface TimeSelectorProps {
   onSelect: (selectedTime: string) => void;
   bookedTimes: string[];
 }
 
-interface TimeSelectorState {
-  selectedTime: string;
-  bookedTimes: string[];
-}
+const TimeSelector = ({ onSelect, bookedTimes }: TimeSelectorProps) => {
+  const [selectedTime, setSelectedTime] = useState("");
 
-class TimeSelector extends React.Component<
-  TimeSelectorProps,
-  TimeSelectorState
-> {
-  constructor(props: TimeSelectorProps) {
-    super(props);
-    this.state = {
-      selectedTime: "",
-      bookedTimes: props.bookedTimes, // Get bookedTimes from props
-    };
-  }
-
-  handleTimeSelect = (selectedTime: string) => {
-    this.setState({ selectedTime });
-    this.props.onSelect(selectedTime);
+  // Handles time selection
+  const handleTimeSelect = (selectedTime: string) => {
+    setSelectedTime(selectedTime);
+    onSelect(selectedTime);
   };
 
-  render() {
-    const startTime = 9 * 60; // 9:00 in minutes
-    const endTime = 17 * 60; // 16:00 in minutes
-    const interval = 15; // 15 minutes interval
+  // Generate available time slots (refactored for clarity)
+  const generateTimeSlots = () => {
+    const startTime = 9 * 60;
+    const endTime = 17 * 60;
+    const interval = 15;
     const times = [];
 
     for (let i = startTime; i < endTime; i += interval) {
@@ -40,9 +28,7 @@ class TimeSelector extends React.Component<
         .toString()
         .padStart(2, "0")}`;
 
-      const isBooked = this.state.bookedTimes
-        ? this.state.bookedTimes.includes(timeString)
-        : false;
+      //const isBooked = bookedTimes.includes(timeString);
 
       times.push(
         <div
@@ -50,21 +36,25 @@ class TimeSelector extends React.Component<
           className={`cursor-pointer border-solid border-2 rounded border-sky-100 w-32 text-center ${
             isBooked ? "booked" : ""
           }`}
-          onClick={() => (!isBooked ? this.handleTimeSelect(timeString) : null)}
+          onClick={() => (!isBooked ? handleTimeSelect(timeString) : null)}
         >
           {timeString} {isBooked ? "(Booked)" : ""}
         </div>
       );
     }
-    console.log(times);
-    return (
-      <div className='h-3/4 overflow-y-auto w-48 bg-blue'>
-        <div className='flex flex-col list-none gap-2 justify-center items-center'>
-          {times}
-        </div>
+    return times;
+  };
+
+  // Use useEffect to generate the time slots in the beginning
+  const timeSlots = generateTimeSlots();
+
+  return (
+    <div className='h-3/4 overflow-y-auto w-48 bg-blue'>
+      <div className='flex flex-col list-none gap-2 justify-center items-center'>
+        {timeSlots}
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 export default TimeSelector;

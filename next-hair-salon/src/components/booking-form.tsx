@@ -7,13 +7,7 @@ import React, { useState } from "react";
 import Stats from "./Stats";
 import TimeSelector from "./bookingComponents/TimeSelect";
 import TypeSelector from "./bookingComponents/TypeSelector";
-
-export enum BookingType {
-  HERREKLIPP = "herreklipp",
-  DAMEKLIPP = "dameklipp",
-  HÅRFARGING = "hårfarging",
-  SKJEGGTRIMM = "skjeggtrim",
-}
+import { BookingType } from "./bookingComponents/enums";
 
 export function BookingForm() {
   enum AnimationDirection {
@@ -29,7 +23,7 @@ export function BookingForm() {
     },
     bookingDetails: {
       date: null as Date,
-      time: null as String,
+      time: null as String[],
       bookingType: null as BookingType[],
       bookingDuration: null as Number,
     },
@@ -71,7 +65,7 @@ export function BookingForm() {
 
   const handleDateSelection = (selectedDate: Date, displayDate: String) => {
     updateBookingDate(selectedDate);
-    decSelectedOption();
+    incSelectedOption();
   };
 
   //Handling what component should be rendered based on the selectedOption variable
