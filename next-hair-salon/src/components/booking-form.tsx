@@ -4,6 +4,7 @@ import CalendarSelect from "./bookingComponents/CalendarSelect";
 import SlideInContainer from "./SlideInContainer";
 import React, { useState } from "react";
 import Stats from "./Stats";
+import TimeSelector from "./bookingComponents/TimeSelect";
 
 export function BookingForm() {
   enum BookingType {
@@ -60,6 +61,10 @@ export function BookingForm() {
 
   const handleDateSelection = (selectedDate: Date, displayDate: String) => {
     updateBookingData(["bookingDetails", "date"], selectedDate);
+    setUiState({
+      ...uiState,
+      selectedOption: 1,
+    });
   };
 
   //Handling what component should be rendered based on the selectedOption variable
@@ -86,7 +91,7 @@ export function BookingForm() {
         stepIndex={1}
         direction={direction}
       >
-        <Stats />
+        <TimeSelector></TimeSelector>
       </BookingStep>
       <p>{bookingDetails.date.toLocaleString()}</p>
     </div>
