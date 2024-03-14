@@ -8,6 +8,7 @@ import Stats from "./Stats";
 import TimeSelector from "./bookingComponents/TimeSelect";
 import TypeSelector from "./bookingComponents/TypeSelector";
 import { BookingType } from "./bookingComponents/enums";
+import ServicesSelector from "./ServiceSelector";
 
 export function BookingForm() {
   enum AnimationDirection {
@@ -36,8 +37,6 @@ export function BookingForm() {
 
   //Access the bookingData objects
   const { employee, bookingDetails, customer } = bookingData;
-
-  console.log(employee.employee_name); // here i log the employee_name. It returnes 0
 
   //UI Component State
   const [uiState, setUiState] = useState({
@@ -129,7 +128,7 @@ export function BookingForm() {
         stepIndex={0}
         direction={direction}
       >
-        <TypeSelector onSubmit={handleTypeSelection}></TypeSelector>
+        <ServicesSelector></ServicesSelector>
       </BookingStep>
       <BookingStep
         selectedOption={selectedOption}
