@@ -16,6 +16,19 @@ export function BookingForm() {
     BOTTOM = "bottom",
   }
 
+  interface Service {
+    service_id: number; // Adjust the types as needed
+    name: string;
+    price: number;
+    description: string;
+    time_requirement: string | number; // Or whatever type represents the duration
+  }
+
+  interface ServicesData {
+    services: Service[];
+    price: number;
+    duration: number | string; // Assuming combined duration might be a string
+  }
   //BookingData state
   const [bookingData, setBookingData] = useState({
     employee: {
@@ -48,6 +61,8 @@ export function BookingForm() {
   //Access the states
   const { selectedOption, previousOption, direction } = uiState;
 
+  const [servicesData, setServicesData] = useState<ServicesData | null>(null);
+
   //Handling the selections
 
   const handleTypeSelection = (
@@ -60,6 +75,14 @@ export function BookingForm() {
     if (employee.employee_name === null) {
       console.log(employee.employee_name);
     }
+  };
+
+  const handleServicesSelected = (
+    services: Service[],
+    price: number,
+    duration: number | string
+  ) => {
+    setServicesData({ services, price, duration });
   };
 
   const handleDateSelection = (selectedDate: Date, displayDate: String) => {
@@ -128,7 +151,9 @@ export function BookingForm() {
         stepIndex={0}
         direction={direction}
       >
-        <ServicesSelector></ServicesSelector>
+        <ServicesSelector
+          onServicesSubmit={handleServicesSelected}
+        ></ServicesSelector>
       </BookingStep>
       <BookingStep
         selectedOption={selectedOption}
