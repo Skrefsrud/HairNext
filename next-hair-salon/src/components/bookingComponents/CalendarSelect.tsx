@@ -1,13 +1,22 @@
 "use client";
-import React, { useState, ChangeEvent } from "react";
+import React, { useState, ChangeEvent, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronLeft,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 
+import { supabase } from "@/utils/supabase/supabaseClient";
+import { fetchAvailableDates } from "../booking-form-functions";
+
 interface CalendarSelectProps {
   onSelect?: (selectedDate: Date) => void;
+}
+interface RenderCalendarProps {
+  onDayClick: (day: number) => void;
+  month: number;
+  year: number;
+  availableDates: number[];
 }
 
 function CalendarSelect({ onSelect }: CalendarSelectProps) {
@@ -15,6 +24,7 @@ function CalendarSelect({ onSelect }: CalendarSelectProps) {
   const currentYear = new Date().getFullYear();
   const [month, setMonth] = useState(currentMonth);
   const [year, setYear] = useState(currentYear);
+  const [availableDates, setAvailableDates] = useState<number[]>([]);
 
   const handleDayClick = (day: number) => {
     let selectedDate = new Date(year, month, day);
@@ -46,6 +56,20 @@ function CalendarSelect({ onSelect }: CalendarSelectProps) {
     }
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      const rawDates = await fetchAvailableDates(month + 1, year);
+      const availableDays = rawDates
+        .filter((dateString) => dateString) // Filter out any undefined
+        .map((dateString) => parseInt(dateString.slice(-2), 10)); // Extract days
+
+      setAvailableDates(availableDays);
+      console.log("availableDays: ", availableDays);
+    };
+
+    fetchData();
+  }, [month, year]);
+
   return (
     <div className='flex flex-col items-center w-5/6'>
       <div className='flex items-center justify-center gap-10 mb-12'>
@@ -64,7 +88,12 @@ function CalendarSelect({ onSelect }: CalendarSelectProps) {
           className='cursor-pointer'
         />
       </div>
-      <RenderCalendar onDayClick={handleDayClick} month={month} year={year} />
+      <RenderCalendar
+        onDayClick={handleDayClick}
+        month={month}
+        year={year}
+        availableDates={availableDates}
+      />
     </div>
   );
 }
@@ -115,7 +144,7 @@ function getMonth(value) {
   return months[value];
 }
 
-function RenderCalendar({ onDayClick, month, year }) {
+function RenderCalendar({ onDayClick, month, year, availableDates }) {
   let currentYear = year;
   let currentMonth = month;
   let firstDay = new Date(currentYear, currentMonth, 1).getDay();
@@ -130,26 +159,37 @@ function RenderCalendar({ onDayClick, month, year }) {
 
   let rows = [];
 
+  let cellAvailClasses =
+    "bg-green-200 hover:bg-green-300 transition border border-green-500 text-green-700 cursor-pointer";
+
+  let cellNotAvailClasses =
+    "bg-gray-100 hover:bg-gray-200 border border-gray-300 text-gray-500 cursor-not-allowed";
+
   for (let i = 0; i < numRows; i++) {
     let cols = [];
     for (let j = 0 - toMonday; j < numCols - toMonday; j++) {
+      let cellDay = i * numCols + j + 1;
       const handleClick = () => {
-        onDayClick(i * numCols + j + 1);
+        onDayClick(cellDay);
       };
 
       let cellClasses =
-        "border border-slate-100 rounded-sm p-4 flex items-center justify-center cursor-pointer aspect-square"; // Base class
-      if (i * numCols + j + 1 < 1 || i * numCols + j + 1 > dayAmount) {
+        "border border-slate-100 rounded-sm p-4 flex items-center justify-center  aspect-square"; // Base class
+      if (cellDay < 1 || cellDay > dayAmount) {
         cellClasses += " invisible"; // Mark inactive days
       }
 
       cols.push(
         <div
-          key={i * numCols + j + 1}
-          className={cellClasses}
-          onClick={handleClick}
+          key={cellDay}
+          className={`${cellClasses} ${
+            availableDates.includes(cellDay)
+              ? cellAvailClasses
+              : cellNotAvailClasses
+          }`}
+          onClick={availableDates.includes(cellDay) ? handleClick : undefined}
         >
-          {i * numCols + j + 1}
+          {cellDay}
         </div>
       );
     }

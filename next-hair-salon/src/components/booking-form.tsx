@@ -8,7 +8,7 @@ import Stats from "./Stats";
 import TimeSelector from "./bookingComponents/TimeSelect";
 import TypeSelector from "./bookingComponents/TypeSelector";
 import { BookingType } from "./bookingComponents/enums";
-import ServicesSelector from "./ServiceSelector";
+import ServicesSelector from "./bookingComponents/ServiceSelector";
 
 export function BookingForm() {
   enum AnimationDirection {
@@ -80,14 +80,14 @@ export function BookingForm() {
   const handleServicesSelected = (
     services: Service[],
     price: number,
-    duration: number | string
+    duration: number
   ) => {
     setServicesData({ services, price, duration });
+    incSelectedOption();
   };
 
   const handleDateSelection = (selectedDate: Date, displayDate: String) => {
     updateBookingDate(selectedDate);
-    incSelectedOption();
   };
 
   //Handling what component should be rendered based on the selectedOption variable
