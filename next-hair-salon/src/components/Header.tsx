@@ -1,10 +1,13 @@
 // app/Header.tsx
+import Link from "next/link";
 export default function Header() {
   return (
-    <header className='container mx-auto w-full bg-gray-100'>
-      <div className='navbar bg-base-100'>
+    <header className='container mx-auto w-full  bg-transparent'>
+      <div className='navbar bg-transparent'>
         <div className='flex-1'>
-          <a className='btn btn-ghost text-xl'>daisyUI</a>
+          <Link href='/' className='btn btn-ghost text-xl'>
+            Hair Affair
+          </Link>
         </div>
         <div className='flex-none'>
           <ul className='menu menu-horizontal px-1'>

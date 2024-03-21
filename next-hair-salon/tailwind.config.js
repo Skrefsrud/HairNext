@@ -7,7 +7,26 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   daisyui: {
-    themes: ["light", "dark", "cupcake"],
+    themes: [
+      "light",
+      "dark",
+      "cupcake",
+      "retro",
+      {
+        mytheme: {
+          primary: "#F8F0E6", //Main brand color, used for primary buttons, links, and accents.
+          "primary-focus": "#FFE3C3", // Slightly lighter for focus state
+          secondary: "#985F6F", //Secondary brand color, used for less prominent elements.
+          accent: "#B38B8F", // A contrasting color used for highlighting or drawing attention
+          neutral: "#C0A596", //Base neutral color, often used for text and backgrounds
+          "base-100": "#D9C8D0", //White or background color.
+          "base-content": "#B38B8F", //Color of text and icons on the base color.
+
+          error: "#E74C3C",
+          // ... etc.
+        },
+      },
+    ],
     darkTheme: "dark", // name of one of the included themes for dark mode
     base: true, // applies background color and foreground color for root element by default
     styled: true, // include daisyUI colors and design decisions for all components

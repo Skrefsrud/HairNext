@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='en' data-theme='cupcake'>
+    <html lang='en' data-theme='mytheme'>
       <head>
         <title>HairCut</title>
         <meta name='description' content='hairSaloon!"' />
@@ -26,11 +26,13 @@ export default function RootLayout({
 
       <body
         className={cn(
-          "min-h-screen bg-background font-sans antialiased",
+          "min-h-screen bg-background font-sans antialiased my-gradient",
           fontSans.variable
         )}
       >
+        <Header></Header>
         <main>{children}</main>
+        <Footer></Footer>
       </body>
     </html>
   );
