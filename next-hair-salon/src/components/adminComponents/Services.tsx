@@ -2,11 +2,17 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/supabaseClient";
 import { Button } from "../ui/button";
+import { AddService } from "@/components/adminComponents/AddService";
 
 function Services() {
   const [services, setServices] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const serviceNames = [];
+  services.map((service) => {
+    serviceNames.push(service.name.toLowerCase());
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,6 +35,8 @@ function Services() {
     fetchData();
   }, []);
 
+  function handleServiceAdded() {}
+
   return (
     <div>
       {isLoading && <p>Loading services...</p>}
@@ -44,7 +52,10 @@ function Services() {
                 <th>Price</th>
                 <th>Time Requirement</th>
                 <th className='flex justify-end'>
-                  <Button className='px-3 py-1'>Add Service</Button>
+                  <AddService
+                    existingServiceNames={serviceNames}
+                    onServiceAdded={handleServiceAdded}
+                  ></AddService>
                 </th>
               </tr>
             </thead>

@@ -33,7 +33,7 @@ function AdminNavigation() {
         className='tab'
         aria-label='Bookings'
         checked={activeView === "bookings"} // Sync with state
-        onClick={() => setActiveView("bookings")}
+        onChange={() => setActiveView("bookings")}
       />
       <div
         role='tabpanel'
@@ -52,7 +52,7 @@ function AdminNavigation() {
         className='tab'
         aria-label='Employees'
         checked={activeView === "employees"}
-        onClick={() => setActiveView("employees")}
+        onChange={() => setActiveView("employees")}
       />
       <div
         role='tabpanel'
@@ -71,7 +71,7 @@ function AdminNavigation() {
         className='tab'
         aria-label='Availabilities'
         checked={activeView === "availabilities"}
-        onClick={() => setActiveView("availabilities")}
+        onChange={() => setActiveView("availabilities")}
       />
       <div
         role='tabpanel'
@@ -90,7 +90,7 @@ function AdminNavigation() {
         className='tab'
         aria-label='Services'
         checked={activeView === "services"}
-        onClick={() => setActiveView("services")}
+        onChange={() => setActiveView("services")}
       />
       <div
         role='tabpanel'
