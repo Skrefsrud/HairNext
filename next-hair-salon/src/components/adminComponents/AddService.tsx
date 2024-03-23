@@ -13,12 +13,14 @@ import { Label } from "@/components/ui/label";
 import { type } from "os";
 import { useState } from "react";
 import { insertServiceToSupabase } from "@/lib/database";
+import { AlertComponent } from "@/components/Alert";
 
 export function AddService({ existingServiceNames, onServiceAdded }) {
   const [name, setName] = useState("");
   const [price, setPrice] = useState(""); // Initialize price as empty
   const [timeReq, setTimeReq] = useState("");
   const [description, setDescription] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleNameChange = (event) => setName(event.target.value);
   const handlePriceChange = (event) => setPrice(event.target.value);
@@ -35,13 +37,13 @@ export function AddService({ existingServiceNames, onServiceAdded }) {
 
     // Check for existing name
     if (existingServiceNames.includes(name.toLowerCase())) {
-      alert("A service with this name already exists!");
+      setErrorMessage("A service with this name already exists!");
       return;
     }
 
     //Ensure time format
     if (timeReq % 15 !== 0) {
-      alert("Time requirement must be in 15-minute intervals");
+      setErrorMessage("Time requirement must be in 15-minute intervals");
       return;
     }
 
@@ -50,7 +52,9 @@ export function AddService({ existingServiceNames, onServiceAdded }) {
 
     // Ensure price and timeReq were successfully converted to numbers
     if (isNaN(priceAsNumber) || isNaN(timeReqAsNumber)) {
-      alert("Please enter valid numbers for price and time requirement.");
+      setErrorMessage(
+        "Please enter valid numbers for price and time requirement."
+      );
       return;
     }
 
@@ -155,6 +159,13 @@ export function AddService({ existingServiceNames, onServiceAdded }) {
             Submit service
           </Button>
         </DialogFooter>
+        {errorMessage !== "" && (
+          <AlertComponent
+            variant='destructive'
+            alertTitle='Error'
+            errorMessage={errorMessage}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
