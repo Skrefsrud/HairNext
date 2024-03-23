@@ -1,7 +1,7 @@
 import { supabase } from "@/utils/supabase/supabaseClient";
 import { toPostgresInterval } from "@/lib/databaseHelpers";
 
-interface ServiceFormData {
+export interface ServiceFormData {
   name: string;
   price: number;
   timeReq: number;
@@ -38,7 +38,7 @@ export async function insertServiceToSupabase(
           time_requirement: toPostgresInterval(formData.timeReq),
         },
       ])
-      .select();
+      .select("id, name, price, description, time_requirement");
 
     if (error) {
       throw error;
@@ -50,11 +50,36 @@ export async function insertServiceToSupabase(
       );
     }
 
-    return { success: true };
+    return { success: true, data: data[0] };
 
     console.log("Service inserted successfully:", data);
   } catch (error) {
     console.error("Error inserting service:", error);
+    return { success: false, error };
+  }
+}
+
+interface DeleteServiceResult {
+  success: boolean;
+  error?: Error;
+}
+
+export async function deleteServiceById(
+  id: number
+): Promise<DeleteServiceResult> {
+  try {
+    const { data, error } = await supabase
+      .from("services")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      throw error;
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting service:", error);
     return { success: false, error };
   }
 }

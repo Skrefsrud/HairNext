@@ -65,26 +65,14 @@ export function AddService({ existingServiceNames, onServiceAdded }) {
       description,
     };
 
-    console.log(
-      "name type: ",
-      typeof name,
-      "price type: ",
-      typeof priceAsNumber,
-      "timeReq type: ",
-      typeof timeReqAsNumber,
-      "description type: ",
-      typeof description
-    );
-
     try {
       // Using a try/catch
-      const { success, error } = await insertServiceToSupabase(formData);
+      const { success, data, error } = await insertServiceToSupabase(formData);
 
       if (success) {
         // Success!
         alert("Service added successfully!");
-        // Potentially update your displayed list of services (if applicable)
-        // Consider closing the dialog
+        onServiceAdded(data);
       } else {
         // Failure
         alert(`Error adding service: ${error?.message}`);
