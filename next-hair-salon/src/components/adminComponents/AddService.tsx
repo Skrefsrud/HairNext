@@ -25,8 +25,13 @@ export function AddService({ existingServiceNames, onServiceAdded }) {
   const handleTimeReqChange = (event) => setTimeReq(event.target.value);
   const handleDescriptionChange = (event) => setDescription(event.target.value);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (name === "" || description === "" || timeReq === "" || price === "") {
+      setErrorMessage("Please fill in all fields");
+      return;
+    }
 
     // Check for existing name
     if (existingServiceNames.includes(name.toLowerCase())) {
@@ -66,7 +71,24 @@ export function AddService({ existingServiceNames, onServiceAdded }) {
       "description type: ",
       typeof description
     );
-    insertServiceToSupabase(formData);
+
+    try {
+      // Using a try/catch
+      const { success, error } = await insertServiceToSupabase(formData);
+
+      if (success) {
+        // Success!
+        alert("Service added successfully!");
+        // Potentially update your displayed list of services (if applicable)
+        // Consider closing the dialog
+      } else {
+        // Failure
+        alert(`Error adding service: ${error?.message}`);
+      }
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
+      alert("An unexpected error occurred. Please try again.");
+    }
   };
 
   return (
