@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 interface Service {
-  service_id: number;
+  id: number;
   name: string;
   price: number;
   description: string;
@@ -40,7 +40,7 @@ const ServicesSelector = ({ onServicesSubmit }: Props) => {
       setIsLoading(true);
       const { data, error } = await supabase
         .from("services")
-        .select("service_id, name, price, description, time_requirement");
+        .select("id, name, price, description, time_requirement");
 
       if (error) {
         console.error(error);
@@ -56,7 +56,7 @@ const ServicesSelector = ({ onServicesSubmit }: Props) => {
 
   useEffect(() => {
     const newSelectedServices = services.filter((service) =>
-      selectedServiceIds.includes(service.service_id)
+      selectedServiceIds.includes(service.id)
     );
     setSelectedServices(newSelectedServices);
   }, [selectedServiceIds, services]);
@@ -98,14 +98,14 @@ const ServicesSelector = ({ onServicesSubmit }: Props) => {
       ) : (
         <ul>
           {services.map((service) => (
-            <li key={service.service_id}>
+            <li key={service.id}>
               <input
                 id={service.name}
                 className='checkbox checkbox-primary'
                 type='checkbox'
-                value={service.service_id}
-                onChange={() => handleCheckboxChange(service.service_id)}
-                checked={selectedServiceIds.includes(service.service_id)}
+                value={service.id}
+                onChange={() => handleCheckboxChange(service.id)}
+                checked={selectedServiceIds.includes(service.id)}
               />
               <Label htmlFor={service.name}>
                 {service.name} - {service.price} (Duration:{" "}
