@@ -12,11 +12,19 @@ import {
 
 import { Button } from "@/components/ui/button";
 
+interface Service {
+  id: number;
+  name: string;
+  price: number;
+  description: string;
+  time_requirement: string;
+}
+
 interface Props {
   buttonContent: string;
   title: string;
   description: string;
-  serviceId: number;
+  service: Service;
   onDeleteConfirmed: () => serviceId;
 }
 
@@ -34,7 +42,7 @@ export function ComfirmServiceDelete(props: Props) {
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            onClick={() => props.onDeleteConfirmed(props.serviceId)}
+            onClick={() => props.onDeleteConfirmed(props.service)}
           >
             Continue
           </AlertDialogAction>

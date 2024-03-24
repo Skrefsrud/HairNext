@@ -1,16 +1,33 @@
+import { NextApiRequest, NextApiResponse } from "next";
 import { supabase } from "@/utils/supabase/supabaseClient";
-import { toPostgresInterval } from "@/utils/databaseHelpers";
+import { toPostgresInterval } from "@/utils/apiHelpers";
 
-export interface ServiceFormData {
+interface SupabaseService {
+  id: number;
+  name: string;
+  price: number;
+  description: string;
+  time_requirement: string;
+}
+
+interface ServiceFormData {
   name: string;
   price: number;
   timeReq: number;
   description: string;
 }
 
-export async function insertServiceToSupabase(
-  formData: ServiceFormData
-): Promise<{ success: boolean; error?: Error }> {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "Method not allowed" });
+    return;
+  }
+
+  const formData: ServiceFormData = req.body;
+
   if (!formData) {
     throw new Error("insertServiceToSupabase was called with null formData");
   }
@@ -29,7 +46,7 @@ export async function insertServiceToSupabase(
 
   try {
     const { data, error } = await supabase
-      .from("services")
+      .from<SupabaseService>("services")
       .insert([
         {
           name: formData.name,
@@ -50,36 +67,12 @@ export async function insertServiceToSupabase(
       );
     }
 
-    return { success: true, data: data[0] };
-
-    console.log("Service inserted successfully:", data);
-  } catch (error) {
-    console.error("Error inserting service:", error);
-    return { success: false, error };
-  }
-}
-
-interface DeleteServiceResult {
-  success: boolean;
-  error?: Error;
-}
-
-export async function deleteServiceById(
-  id: number
-): Promise<DeleteServiceResult> {
-  try {
-    const { data, error } = await supabase
-      .from("services")
-      .delete()
-      .eq("id", id);
-
-    if (error) {
-      throw error;
+    if (data) {
+      res.status(200).json({ success: true, data: data[0] });
+    } else {
+      console.error("insertServiceToSupabase response has no data");
     }
-
-    return { success: true };
   } catch (error) {
-    console.error("Error deleting service:", error);
-    return { success: false, error };
+    res.status(500).json({ success: false, error: (error as Error).message });
   }
 }

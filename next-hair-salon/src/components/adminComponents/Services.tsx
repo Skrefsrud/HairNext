@@ -6,6 +6,14 @@ import { AddService } from "@/components/adminComponents/AddService";
 import { ComfirmServiceDelete } from "../AlertDialog";
 import { ServiceFormData, deleteServiceById } from "@/lib/database";
 
+interface Service {
+  id: number;
+  name: string;
+  price: number;
+  description: string;
+  time_requirement: string;
+}
+
 function Services() {
   const [services, setServices] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,22 +49,38 @@ function Services() {
     setServices((prevServices) => [...prevServices, newService]);
   }
 
-  async function handleDeleteConfirmed(serviceId: number) {
-    console.log("Delete confirmed by user!", serviceId);
-    const { success, error } = await deleteServiceById(serviceId);
+  async function handleDeleteConfirmed(service: Service) {
+    console.log("Delete confirmed by user!", service);
 
-    if (success) {
-      // Service deleted successfully
-      // Update your UI, for example, by removing the row from the displayed services.
-      setServices((prevServices) =>
-        prevServices.filter((service) => service.id !== serviceId)
+    console.log(JSON.stringify({ service }));
+
+    try {
+      const response = await fetch("/api/services/deleteService", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ service }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error deleting service: ${response.status}`);
+      }
+
+      const { success, error } = await response.json();
+
+      if (success) {
+        // Success!
+        setServices((prevServices) =>
+          prevServices.filter((prevService) => prevService.id !== service.id)
+        );
+        console.log("Service deleted successfully");
+      } else {
+        alert("Error deleting service: " + error?.message);
+      }
+    } catch (error) {
+      console.error("Error in handleDeleteConfirmed:", error);
+      alert(
+        "An unexpected error occurred while deleting the service. Please try again."
       );
-      console.log("Service deleted successfully");
-    } else {
-      // Deletion failed
-      console.error("Error deleting service:", error);
-      // Handle the error, for example, by displaying an error message to the user.
-      alert("Error deleting service: " + error);
     }
   }
 
@@ -97,7 +121,7 @@ function Services() {
                       buttonContent='Delete Service'
                       title='Delete Service'
                       description='Are you sure you want to delete this service?'
-                      serviceId={service.id}
+                      service={service}
                       onDeleteConfirmed={handleDeleteConfirmed}
                     />
                   </td>

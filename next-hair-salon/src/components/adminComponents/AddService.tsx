@@ -12,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { type } from "os";
 import { useState } from "react";
-import { insertServiceToSupabase } from "@/lib/database";
 import { AlertComponent } from "@/components/Alert";
 
 export function AddService({ existingServiceNames, onServiceAdded }) {
@@ -66,15 +65,23 @@ export function AddService({ existingServiceNames, onServiceAdded }) {
     };
 
     try {
-      // Using a try/catch
-      const { success, data, error } = await insertServiceToSupabase(formData);
+      const response = await fetch("/api/services/insertService", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error adding service: ${response.status}`);
+      }
+
+      const { success, data, error } = await response.json();
 
       if (success) {
         // Success!
         alert("Service added successfully!");
         onServiceAdded(data);
       } else {
-        // Failure
         alert(`Error adding service: ${error?.message}`);
       }
     } catch (error) {

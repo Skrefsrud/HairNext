@@ -1,4 +1,4 @@
-import { toPostgresInterval } from "../lib/databaseHelpers";
+import { toPostgresInterval } from "../utils/databaseHelpers";
 
 describe("toPostgresInterval", () => {
   test('should return "0 minutes" when input is 0', () => {
