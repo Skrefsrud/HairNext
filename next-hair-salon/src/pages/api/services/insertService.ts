@@ -45,6 +45,8 @@ export default async function handler(
   }
 
   try {
+    const formattedTimeReq = toPostgresInterval(formData.timeReq);
+
     const { data, error } = await supabase
       .from<SupabaseService>("services")
       .insert([
@@ -52,7 +54,7 @@ export default async function handler(
           name: formData.name,
           price: formData.price,
           description: formData.description,
-          time_requirement: toPostgresInterval(formData.timeReq),
+          time_requirement: formattedTimeReq,
         },
       ])
       .select("id, name, price, description, time_requirement");

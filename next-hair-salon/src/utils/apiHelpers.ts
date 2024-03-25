@@ -48,3 +48,11 @@ export async function deleteRowById(
     return { success: false, error };
   }
 }
+
+export function removeTimeReqSeconds(timeStr) {
+  if (typeof timeStr !== "string" || timeStr.length !== 8) {
+    throw new Error("Invalid time format. Expected HH:MM:SS format.");
+  }
+
+  return timeStr.slice(0, -3); // Remove the last 3 characters (":00")
+}

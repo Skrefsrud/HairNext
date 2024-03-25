@@ -7,6 +7,8 @@ import { ComfirmServiceDelete } from "./serviceComponents/ComfirmServiceDelete";
 import { ServiceFormData, deleteServiceById } from "@/lib/database";
 import { ServiceEditRow } from "@/components/adminComponents/serviceComponents/ServiceEditRow";
 import { ServiceTableRow } from "@/components/adminComponents/serviceComponents/ServiceTableRow";
+import { fetchServices } from "@/pages/actions/services/fetchServices";
+import { removeTimeReqSeconds } from "@/utils/apiHelpers";
 
 interface Service {
   id: number;
@@ -33,11 +35,8 @@ function Services() {
       setError(null);
 
       try {
-        const { data, error } = await supabase.from("services").select("*");
-
-        if (error) throw error;
-
-        setServices(data);
+        const services = await fetchServices();
+        setServices(services);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -50,10 +49,6 @@ function Services() {
 
   const handleSaveService = async (updatedService: Service) => {
     try {
-      console.log(
-        "Received service to update (Services.tsx):",
-        JSON.stringify(updatedService)
-      );
       // 1. Send Update Request to API
       const response = await fetch("/api/services/updateService", {
         method: "PUT",
@@ -88,14 +83,15 @@ function Services() {
   };
 
   function handleServiceAdded(newService: ServiceFormData) {
-    setServices((prevServices) => [...prevServices, newService]);
+    const updatedService = {
+      ...newService,
+      time_requirement: removeTimeReqSeconds(newService.time_requirement),
+    };
+
+    setServices((prevServices) => [...prevServices, updatedService]);
   }
 
   async function handleDeleteConfirmed(service: Service) {
-    console.log("Delete confirmed by user!", service);
-
-    console.log(JSON.stringify({ service }));
-
     try {
       const response = await fetch("/api/services/deleteService", {
         method: "DELETE",
@@ -111,15 +107,19 @@ function Services() {
 
       if (success) {
         // Success!
+        const index = serviceNames.findIndex((name) => name === service.name);
+
+        if (index !== -1) {
+          serviceNames.splice(index, 1);
+        }
+
         setServices((prevServices) =>
           prevServices.filter((prevService) => prevService.id !== service.id)
         );
-        console.log("Service deleted successfully");
       } else {
         alert("Error deleting service: " + error?.message);
       }
     } catch (error) {
-      console.error("Error in handleDeleteConfirmed:", error);
       alert(
         "An unexpected error occurred while deleting the service. Please try again."
       );
