@@ -1,6 +1,8 @@
 "use server";
 
 import { supabase } from "@/utils/supabase/supabaseClient";
+import { createRedisInstance } from "@/utils/redis/redis";
+import { redis } from "@/lib/redis";
 
 interface Service {
   id: number;
@@ -10,17 +12,17 @@ interface Service {
   time_requirement: string;
 }
 
-const servicesCache = {}; // In-memory cache object
 export async function fetchServices() {
   "use server";
-  const cacheKey = "services"; // Key to store data in the cache
-
-  if (servicesCache[cacheKey]) {
-    console.log("Serving from cache", servicesCache[cacheKey]);
-    return servicesCache[cacheKey]; // Return cached data
-  }
 
   try {
+    const cacheKey = "services";
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      console.log("Fetched from Redis cache");
+      return JSON.parse(cachedData);
+    }
+
     const { data, error } = await supabase.from("services").select("*");
 
     if (error) {
@@ -32,8 +34,8 @@ export async function fetchServices() {
       time_requirement: formatTimeRequirement(service.time_requirement),
     }));
 
-    console.log("fetching Services from Supabase");
-    servicesCache[cacheKey] = services;
+    await redis.set(cacheKey, JSON.stringify(services));
+    console.log("Fetched from database and cached in Redis");
     return services;
   } catch (error) {
     console.error(error);

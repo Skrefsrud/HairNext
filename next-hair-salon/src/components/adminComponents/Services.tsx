@@ -25,9 +25,6 @@ function Services() {
   const [editService, setEditService] = useState<Service | null>(null);
 
   const serviceNames = [];
-  services.map((service) => {
-    serviceNames.push(service.name.toLowerCase());
-  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,6 +43,10 @@ function Services() {
 
     fetchData();
   }, []);
+
+  services.map((service) => {
+    serviceNames.push(service.name.toLowerCase());
+  });
 
   const handleSaveService = async (updatedService: Service) => {
     try {
