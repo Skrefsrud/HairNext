@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { deleteRowById } from "@/utils/apiHelpers";
+import { removeService } from "@/pages/actions/services/redisActions";
 
 interface DeleteRowResult {
   success: boolean;
@@ -36,6 +37,7 @@ export default async function handler(
     const { success, error } = await deleteRowById("services", service.id);
 
     if (success) {
+      callRemoveService(service);
       res.status(200).json({ success: true });
     } else {
       res.status(500).json({ success: false, error: error?.message });
@@ -44,4 +46,8 @@ export default async function handler(
     console.error("Error in API route handler:", error);
     res.status(500).json({ success: false, error: (error as Error).message });
   }
+}
+
+async function callRemoveService(service: Service) {
+  await removeService(service);
 }

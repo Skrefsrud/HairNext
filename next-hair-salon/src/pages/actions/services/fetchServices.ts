@@ -3,6 +3,7 @@
 import { supabase } from "@/utils/supabase/supabaseClient";
 import { createRedisInstance } from "@/utils/redis/redis";
 import { redis } from "@/lib/redis";
+import { cacheService, getServicesFromRedis } from "./redisActions";
 
 interface Service {
   id: number;
@@ -16,11 +17,10 @@ export async function fetchServices() {
   "use server";
 
   try {
-    const cacheKey = "services";
-    const cachedData = await redis.get(cacheKey);
-    if (cachedData) {
-      console.log("Fetched from Redis cache");
-      return JSON.parse(cachedData);
+    const cachedServices = await getServicesFromRedis();
+    if (cachedServices) {
+      console.log("Found cached services in Redis");
+      return cachedServices;
     }
 
     const { data, error } = await supabase.from("services").select("*");
@@ -29,12 +29,12 @@ export async function fetchServices() {
       throw error;
     }
 
-    const services: Service[] = data.map((service) => ({
-      ...service,
-      time_requirement: formatTimeRequirement(service.time_requirement),
-    }));
+    const services: Service[] = formatServices(data);
 
-    await redis.set(cacheKey, JSON.stringify(services));
+    services.forEach((service) => {
+      console.log("forEach service", service.id);
+      addServiceToRedis(service);
+    });
     console.log("Fetched from database and cached in Redis");
     return services;
   } catch (error) {
@@ -48,5 +48,18 @@ function formatTimeRequirement(timeStr) {
     throw new Error("Invalid time format. Expected HH:MM:SS format.");
   }
 
-  return timeStr.slice(0, -3); // Remove the last 3 characters (":00")
+  return timeStr.slice(0, -3);
+}
+
+function formatServices(data) {
+  const formattedData = data.map((service) => ({
+    ...service,
+    time_requirement: formatTimeRequirement(service.time_requirement),
+  }));
+
+  return formattedData;
+}
+
+async function addServiceToRedis(service: Service) {
+  await cacheService(service);
 }

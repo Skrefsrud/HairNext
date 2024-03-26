@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { supabase } from "@/utils/supabase/supabaseClient";
 import { toPostgresInterval } from "@/utils/apiHelpers";
-
+import { cacheService } from "@/pages/actions/services/redisActions";
 interface SupabaseService {
   id: number;
   name: string;
@@ -70,6 +70,7 @@ export default async function handler(
     }
 
     if (data) {
+      callCacheService(data[0]);
       res.status(200).json({ success: true, data: data[0] });
     } else {
       console.error("insertServiceToSupabase response has no data");
@@ -77,4 +78,8 @@ export default async function handler(
   } catch (error) {
     res.status(500).json({ success: false, error: (error as Error).message });
   }
+}
+
+async function callCacheService(service: SupabaseService) {
+  await cacheService(service);
 }

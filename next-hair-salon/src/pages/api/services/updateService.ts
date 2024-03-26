@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { supabase } from "@/utils/supabase/supabaseClient";
 import { toPostgresInterval } from "@/utils/apiHelpers";
+import { editService } from "@/pages/actions/services/redisActions";
 
 interface Service {
   id: number;
@@ -44,6 +45,7 @@ export default async function handler(
     }
 
     if (data) {
+      callEditService(updatedService);
       res.status(200).json({ success: true });
     } else {
       // Handle the case where no service was updated (e.g., ID not found)
@@ -53,4 +55,8 @@ export default async function handler(
     console.error("Error updating service:", error);
     res.status(500).json({ success: false, error: (error as Error).message });
   }
+}
+
+async function callEditService(service: Service) {
+  await editService(service);
 }
