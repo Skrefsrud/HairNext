@@ -1,9 +1,10 @@
 import AdminNavigation from "@/components/adminComponents/AdminNavigation";
+import { AdminNav } from "@/components/adminComponents/admin-nav";
 
 function AdminPage() {
   return (
     <div>
-      <AdminNavigation />
+      <AdminNav />
     </div>
   );
 }

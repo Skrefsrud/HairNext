@@ -23,6 +23,7 @@ export async function editService(service: Service) {
 
 export async function getServicesFromRedis() {
   "use server";
+  console.log("calling getServicesFromRedis");
 
   try {
     const serviceIdCount = await redis.llen("serviceIds");

@@ -20,6 +20,7 @@ export function AddService({ existingServiceNames, onServiceAdded }) {
   const [timeReq, setTimeReq] = useState("");
   const [description, setDescription] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleNameChange = (event) => setName(event.target.value);
   const handlePriceChange = (event) => setPrice(event.target.value);
@@ -79,8 +80,9 @@ export function AddService({ existingServiceNames, onServiceAdded }) {
 
       if (success) {
         // Success!
-        alert("Service added successfully!");
+
         onServiceAdded(data);
+        setIsDialogOpen(false);
       } else {
         alert(`Error adding service: ${error?.message}`);
       }
@@ -91,7 +93,12 @@ export function AddService({ existingServiceNames, onServiceAdded }) {
   };
 
   return (
-    <Dialog>
+    <Dialog
+      open={isDialogOpen}
+      onOpenChange={() =>
+        isDialogOpen ? setIsDialogOpen(false) : setIsDialogOpen(true)
+      }
+    >
       <DialogTrigger asChild>
         <Button>Add service</Button>
       </DialogTrigger>

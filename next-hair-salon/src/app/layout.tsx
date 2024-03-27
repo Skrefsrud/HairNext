@@ -31,7 +31,7 @@ export default function RootLayout({
         )}
       >
         <Header></Header>
-        <main>{children}</main>
+        <main className='mx-auto min-h-screen'>{children}</main>
         <Footer></Footer>
       </body>
     </html>

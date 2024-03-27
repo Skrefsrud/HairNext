@@ -23,8 +23,8 @@ function Services() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [editService, setEditService] = useState<Service | null>(null);
-
-  const serviceNames = [];
+  const [serviceNames, setServiceNames] = useState<string[]>([]);
+  const [addServiceIsOpen, setaddServiceIsOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,7 +32,12 @@ function Services() {
       setError(null);
 
       try {
+        console.log("useEffect called");
         const services = await fetchServices();
+        const serviceNames = services.map((service) =>
+          service.name.toLowerCase()
+        );
+
         setServices(services);
       } catch (err) {
         setError(err.message);
@@ -43,10 +48,6 @@ function Services() {
 
     fetchData();
   }, []);
-
-  services.map((service) => {
-    serviceNames.push(service.name.toLowerCase());
-  });
 
   const handleSaveService = async (updatedService: Service) => {
     try {
@@ -90,6 +91,7 @@ function Services() {
     };
 
     setServices((prevServices) => [...prevServices, updatedService]);
+    setaddServiceIsOpen(false);
   }
 
   async function handleDeleteConfirmed(service: Service) {
@@ -157,6 +159,7 @@ function Services() {
                     service={service}
                     handleSaveService={handleSaveService}
                     setEditService={setEditService}
+                    onClick={() => setaddServiceIsOpen(true)}
                   />
                 ) : (
                   <ServiceTableRow

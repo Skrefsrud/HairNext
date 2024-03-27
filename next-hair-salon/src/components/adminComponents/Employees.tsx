@@ -1,6 +1,6 @@
-"use client";
 import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/supabaseClient";
+import { EmployeeCard } from "./employeeComponents/employee-card";
 
 function Employees() {
   const [employees, setEmployees] = useState([]);
@@ -34,14 +34,10 @@ function Employees() {
       {error && <p>Error loading employees: {error}</p>}
 
       {!isLoading && !error && (
-        <div>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mt-10 '>
           {employees.map((employee) => (
-            <div key={employee.id}>
-              <p>
-                Name: {employee.first_name} {employee.surname}
-              </p>
-              <p>Email: {employee.email}</p>
-              <p>Role: {employee.role}</p>
+            <div key={employee.id} className='flex justify-center'>
+              <EmployeeCard employee={employee} />
             </div>
           ))}
         </div>
