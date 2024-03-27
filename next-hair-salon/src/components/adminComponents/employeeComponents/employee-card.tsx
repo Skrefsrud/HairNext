@@ -22,7 +22,7 @@ export const EmployeeCard: React.FC<{ employee: Employee }> = ({
         <Image src={image} alt={`Employee: ${first_name} ${surname}`}></Image>
       </figure>
       <div className='card-body'>
-        <h2 className='card-title font-poppins font-medium text-white underline underline-offset-4'>
+        <h2 className='card-title font-poppins font-extralight text-white text-4xl '>
           {first_name} {surname}
         </h2>
         <div className='flex flex-col flex-1 gap-4 justify-center'>
