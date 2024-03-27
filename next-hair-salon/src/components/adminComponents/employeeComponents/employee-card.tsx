@@ -3,7 +3,7 @@ import image from "../../../../public/floatingImages/floating6.jpg";
 import { Button } from "@/components/ui/button";
 import { PenIcon } from "@/components/ui/pen-icon";
 
-interface employee {
+interface Employee {
   id: number;
   first_name: string;
   surname: string;
@@ -22,7 +22,7 @@ export const EmployeeCard: React.FC<{ employee: Employee }> = ({
         <Image src={image} alt={`Employee: ${first_name} ${surname}`}></Image>
       </figure>
       <div className='card-body'>
-        <h2 className='card-title'>
+        <h2 className='card-title font-poppins font-medium text-white underline underline-offset-4'>
           {first_name} {surname}
         </h2>
         <div className='flex flex-col flex-1 gap-4 justify-center'>
@@ -34,7 +34,7 @@ export const EmployeeCard: React.FC<{ employee: Employee }> = ({
           </div>
           <div className=''>
             <div className='flex flex-col justify-center'>
-              <p className='text-lg'>Mobile:</p>
+              <p className='text-lg font-poppins'>Mobile:</p>
               <p>{mobile}</p>
             </div>
           </div>

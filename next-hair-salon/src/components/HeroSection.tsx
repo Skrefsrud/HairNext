@@ -11,7 +11,7 @@ export default function HeroSection() {
         <div className=''>
           <div className='flex flex-col justify-center space-y-4'>
             <div className='space-y-2'>
-              <h1 className='text-3xl font-bold tracking-tighter sm:text-4xl xl:text-5xl/none '>
+              <h1 className='text-3xl font-bold tracking-tighter sm:text-4xl xl:text-5xl/none font-poppins'>
                 Expert Hair Styling — Unleash Your Beauty
               </h1>
               <p className='max-w-[500px] '>
