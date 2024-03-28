@@ -1,11 +1,27 @@
 import { useState, useEffect } from "react";
 import { EmployeeCard } from "./employeeComponents/employee-card";
 import { fetchEmployees } from "@/pages/actions/employees/fetchEmployees";
+import { EmployeeDetailsModal } from "./employeeComponents/EmployeeDetailsModal";
+
+type Employee = {
+  id: number;
+  first_name: string;
+  surname: string;
+  mobile: string;
+  email: string;
+  role: string;
+};
 
 function Employees() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  //Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
+    null
+  );
 
   useEffect(() => {
     const loadEmployees = async () => {
@@ -29,6 +45,16 @@ function Employees() {
     loadEmployees();
   }, []);
 
+  const handleOpenModal = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedEmployee(null);
+    setIsModalOpen(false);
+  };
+
   return (
     <div>
       {isLoading && <p>Loading employees...</p>}
@@ -42,11 +68,23 @@ function Employees() {
             }
             return (
               <div key={employee.id} className='flex justify-center'>
-                <EmployeeCard employee={employee} />
+                <EmployeeCard
+                  employee={employee}
+                  onDetailsClick={() => handleOpenModal(employee)}
+                />
               </div>
             );
           })}
         </div>
+      )}
+      {isModalOpen && (
+        <>
+          <EmployeeDetailsModal
+            employee={selectedEmployee}
+            onClose={handleCloseModal}
+          />
+          <div className='modal fixed inset-0 bg-gray-800 opacity-70 blur-lg z-30'></div>
+        </>
       )}
     </div>
   );

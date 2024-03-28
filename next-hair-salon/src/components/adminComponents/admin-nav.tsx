@@ -12,6 +12,7 @@ import { ResponsiveLine } from "@nivo/line";
 import Employees from "./Employees";
 import Bookings from "./Bookings";
 import Services from "./Services";
+import Availabilities from "./Availabilites";
 
 export function AdminNav() {
   return (
@@ -27,6 +28,10 @@ export function AdminNav() {
             <TabsTrigger value='employees'>
               <UsersIcon className='h-4 w-4' />
               Employees
+            </TabsTrigger>
+            <TabsTrigger value='availabilities'>
+              <BoxIcon className='h-4 w-4' />
+              Availabilities
             </TabsTrigger>
             <TabsTrigger value='bookings'>
               <ShoppingBagIcon className='h-4 w-4' />
@@ -46,6 +51,12 @@ export function AdminNav() {
             <div className='p-4'>
               <h1 className='text-2xl font-semibold'>Employees</h1>
               <Employees></Employees>
+            </div>
+          </TabsContent>
+          <TabsContent value='availabilities'>
+            <div className='p-4'>
+              <h1 className='text-2xl font-semibold'>Availabilities</h1>
+              <Availabilities></Availabilities>
             </div>
           </TabsContent>
           <TabsContent value='bookings'>

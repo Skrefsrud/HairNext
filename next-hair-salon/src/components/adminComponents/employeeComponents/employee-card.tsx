@@ -12,9 +12,10 @@ interface Employee {
   role: string;
 }
 
-export const EmployeeCard: React.FC<{ employee: Employee }> = ({
-  employee,
-}) => {
+export const EmployeeCard: React.FC<{
+  employee: Employee;
+  onDetailsClick?: () => void;
+}> = ({ employee, onDetailsClick }) => {
   const { id, first_name, surname, email, mobile, role } = employee;
   return (
     <div className='card w-96  image-full  bg-indigo-500 shadow-lg shadow-indigo-500/50 hover:shadow-indigo-500/70'>
@@ -53,7 +54,9 @@ export const EmployeeCard: React.FC<{ employee: Employee }> = ({
               console.log("edit");
             }}
           ></PenIcon>
-          <Button>See availabilites</Button>
+          {onDetailsClick && (
+            <Button onClick={onDetailsClick}>See details</Button>
+          )}
         </div>
       </div>
     </div>
