@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { fetchEmployees } from "@/pages/actions/employees/fetchEmployees";
 import { SelectEmployee } from "../selectEmployee";
+import { Button } from "../ui/button";
+import { populateTimeSlots } from "../../pages/actions/timeSlots/populateTimeSlots";
 
 type Employee = {
   id: number;
@@ -49,6 +51,10 @@ export default function Availabilities() {
     loadEmployees();
   }, []);
 
+  async function populate() {
+    await populateTimeSlots(3, 2024);
+  }
+
   return (
     <>
       <div className='flex gap-5 m-10'>
@@ -61,6 +67,7 @@ export default function Availabilities() {
           </div>
         ))}
       </div>
+      <Button onClick={populate}>Populate timeSlots</Button>
     </>
   );
 }
