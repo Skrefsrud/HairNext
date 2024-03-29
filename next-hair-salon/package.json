@@ -36,11 +36,14 @@
     "moment-timezone": "^0.5.45",
     "next": "^14.1.2",
     "react": "^18.2.0",
+    "react-circular-progressbar": "^2.1.0",
     "react-dom": "^18.2.0",
+    "react-draggable": "^4.4.6",
     "react-spring": "^9.7.3",
     "sass": "^1.71.1",
     "tailwind-merge": "^2.2.1",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "use-draggable": "^1.5.2"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",

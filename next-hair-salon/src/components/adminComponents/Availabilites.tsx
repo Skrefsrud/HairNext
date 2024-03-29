@@ -3,6 +3,7 @@ import { fetchEmployees } from "@/pages/actions/employees/fetchEmployees";
 import { SelectEmployee } from "../selectEmployee";
 import { Button } from "../ui/button";
 import { populateTimeSlots } from "../../pages/actions/timeSlots/populateTimeSlots";
+import { Clock } from "../Clock";
 
 type Employee = {
   id: number;
@@ -57,7 +58,8 @@ export default function Availabilities() {
 
   return (
     <>
-      <div className='flex gap-5 m-10'>
+      <Clock></Clock>
+      {/* <div className='flex gap-5 m-10'>
         {employees.map((employee) => (
           <div key={employee.id}>
             <SelectEmployee
@@ -66,8 +68,7 @@ export default function Availabilities() {
             />
           </div>
         ))}
-      </div>
-      <Button onClick={populate}>Populate timeSlots</Button>
+      </div> <Button onClick={populate}>Populate timeSlots</Button> */}
     </>
   );
 }
