@@ -13,12 +13,15 @@ type Employee = {
 };
 
 export const SelectEmployee = (props) => {
-  const { employee, onSelect } = props;
+  const { employee, onSelect, checkMark, clickable } = props;
   const [isChecked, setIsChecked] = useState(false);
 
   const handleSelect = () => {
+    if (!clickable) return;
     onSelect(employee);
-    setIsChecked(!isChecked);
+    if (checkMark) {
+      setIsChecked(!isChecked);
+    }
   };
 
   const name_first_letters = getFirstLetters(
@@ -42,16 +45,20 @@ export const SelectEmployee = (props) => {
 
   return (
     <div
-      className='flex flex-wrap w-24 h-24 relative cursor-pointer '
+      style={{ cursor: clickable ? "pointer" : "default" }}
+      className='flex flex-wrap w-24 h-24 relative  '
       onClick={handleSelect}
     >
-      <div className='absolute top-0 left-0 -translate-x-1/3 -translate-y-1/3 bg-white rounded-full h-1/2 w-1/2 z-10'>
-        {isChecked && (
-          <animated.div style={animatedProps}>
-            <CheckmarkIcon></CheckmarkIcon>
-          </animated.div>
-        )}
-      </div>
+      {checkMark && (
+        <div className='absolute top-0 left-0 -translate-x-1/3 -translate-y-1/3 bg-white rounded-full h-1/2 w-1/2 z-10'>
+          {isChecked && (
+            <animated.div style={animatedProps}>
+              <CheckmarkIcon></CheckmarkIcon>
+            </animated.div>
+          )}
+        </div>
+      )}
+
       <Avatar className='h-full w-full' key={employee.id}>
         <AvatarImage src='https://github.com/shadcn.png' />
         <AvatarFallback>fallback</AvatarFallback>
