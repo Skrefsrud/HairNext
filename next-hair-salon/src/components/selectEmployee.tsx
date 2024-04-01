@@ -35,14 +35,6 @@ export const SelectEmployee = (props) => {
     return first + sur;
   }
 
-  const animatedProps = useSpring({
-    opacity: isChecked ? 1 : 0,
-    transform: isChecked
-      ? "scale(1) rotate(0deg)"
-      : "scale(0.8) rotate(-45deg)",
-    config: config.wobbly,
-  });
-
   return (
     <div
       style={{ cursor: clickable ? "pointer" : "default" }}
@@ -51,11 +43,7 @@ export const SelectEmployee = (props) => {
     >
       {checkMark && (
         <div className='absolute top-0 left-0 -translate-x-1/3 -translate-y-1/3 bg-white rounded-full h-1/2 w-1/2 z-10'>
-          {isChecked && (
-            <animated.div style={animatedProps}>
-              <CheckmarkIcon></CheckmarkIcon>
-            </animated.div>
-          )}
+          <CheckmarkIcon isChecked={isChecked}></CheckmarkIcon>
         </div>
       )}
 

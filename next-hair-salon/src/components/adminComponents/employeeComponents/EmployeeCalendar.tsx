@@ -8,9 +8,14 @@ import {
 
 import { supabase } from "@/utils/supabase/supabaseClient";
 import { fetchAvailableDates } from "../booking-form-functions";
+import { EmployeeType } from "@/utils/interfaces";
+import { SelectEmployee } from "@/components/selectEmployee";
+import { CheckmarkIcon } from "@/components/ui/icons/checkmarkIcon";
+import { Button } from "@/components/ui/button";
+import { AddUnavailModal } from "./addUnavailModal";
 
 interface CalendarSelectProps {
-  onSelect?: (selectedDate: Date) => void;
+  passedEmployees: EmployeeType;
 }
 interface RenderCalendarProps {
   onDayClick: (day: number) => void;
@@ -19,24 +24,62 @@ interface RenderCalendarProps {
   availableDates: number[];
 }
 
-function EmployeeCalendar({ onSelect }: CalendarSelectProps) {
+function EmployeeCalendar({ passedEmployees }: CalendarSelectProps) {
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
   const [month, setMonth] = useState(currentMonth);
   const [year, setYear] = useState(currentYear);
   const [availableDates, setAvailableDates] = useState<number[]>([]);
+  const [selectedEmployees, setSelectedEmployees] = useState<Employee[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [selectMultipleDays, setSelectMultipleDays] = useState(false);
+  const [selectedDays, setSelectedDays] = useState<Number[]>([]);
+  const [dates, setDates] = useState<Date[]>([]);
+
+  const handleEmployeeSelect = (employee: Employee) => {
+    const existingEmployeeIndex = selectedEmployees.findIndex(
+      (selectedEmployee) => selectedEmployee.id === employee.id
+    );
+
+    existingEmployeeIndex === -1
+      ? setSelectedEmployees([...selectedEmployees, employee])
+      : setSelectedEmployees(
+          selectedEmployees.filter((e) => e.id !== employee.id)
+        );
+
+    console.log(selectedEmployees);
+  };
 
   const handleDayClick = (day: number) => {
     let selectedDate = new Date(year, month, day);
+    if (selectMultipleDays) {
+      const dayIndex = selectedDays.indexOf(day);
+      if (dayIndex !== -1) {
+        setSelectedDays(selectedDays.filter((d) => d !== day));
+      } else {
+        setSelectedDays([...selectedDays, day]);
+      }
+
+      const existingDateIndex = dates.findIndex(
+        (date) => date.getTime() === selectedDate.getTime() // Compare full timestamps
+      );
+
+      if (existingDateIndex !== -1) {
+        const newDates = dates.filter(
+          (date, index) => index !== existingDateIndex
+        );
+        setDates(newDates);
+      } else {
+        setDates([...dates, selectedDate]);
+      }
+    }
+
     let formatter = new Intl.DateTimeFormat("no", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
     });
     let displayDate = formatter.format(selectedDate);
-    if (onSelect) {
-      onSelect(selectedDate, displayDate);
-    }
   };
 
   const incrementValue = () => {
@@ -46,6 +89,7 @@ function EmployeeCalendar({ onSelect }: CalendarSelectProps) {
     } else {
       setMonth(month + 1);
     }
+    setSelectedDays([]);
   };
   const decrementValue = () => {
     if (month === 0) {
@@ -54,33 +98,64 @@ function EmployeeCalendar({ onSelect }: CalendarSelectProps) {
     } else {
       setMonth(month - 1);
     }
+    setSelectedDays([]);
   };
 
   return (
-    <div className='flex flex-col items-center w-5/6'>
-      <div className='flex items-center justify-center gap-10 mb-12'>
-        <FontAwesomeIcon
-          icon={faChevronLeft}
-          onClick={decrementValue}
-          className='cursor-pointer'
-        />
-        <h2 className='w-12'>
-          {getMonth(month)} {year}
-        </h2>
+    <main className='w-full flex justify-center align-center'>
+      <div className='flex flex-col items-center w-4/6'>
+        <div className='flex w-full justify-center align-center relative'>
+          <div className='absolute left-0 bottom-0'>
+            {selectMultipleDays && (
+              <AddUnavailModal dates={dates}></AddUnavailModal>
+            )}
+            <label className='label cursor-pointer  flex gap-2'>
+              <input
+                type='checkbox'
+                className='checkbox checkbox-primary '
+                onChange={() => setSelectMultipleDays(!selectMultipleDays)}
+              />
+              <span className='label-text text-xl'>Select multiple dates</span>
+            </label>
+          </div>
+          <div className='flex items-center justify-center justify-self-center align-self-center gap-10 mb-12'>
+            <FontAwesomeIcon
+              icon={faChevronLeft}
+              onClick={decrementValue}
+              className='cursor-pointer'
+            />
+            <h2 className='w-12'>
+              {getMonth(month)} {year}
+            </h2>
 
-        <FontAwesomeIcon
-          icon={faChevronRight}
-          onClick={incrementValue}
-          className='cursor-pointer'
+            <FontAwesomeIcon
+              icon={faChevronRight}
+              onClick={incrementValue}
+              className='cursor-pointer'
+            />
+          </div>
+          <div className='flex gap-2 absolute right-0'>
+            {passedEmployees.map((employee) => (
+              <SelectEmployee
+                key={employee.id}
+                employee={employee}
+                clickable={true}
+                checkMark={true}
+                onSelect={handleEmployeeSelect}
+              />
+            ))}
+          </div>
+        </div>
+        <RenderCalendar
+          onDayClick={handleDayClick}
+          month={month}
+          year={year}
+          availableDates={availableDates}
+          selectMultipleDays={selectMultipleDays}
+          selectedDays={selectedDays}
         />
       </div>
-      <RenderCalendar
-        onDayClick={handleDayClick}
-        month={month}
-        year={year}
-        availableDates={availableDates}
-      />
-    </div>
+    </main>
   );
 }
 
@@ -90,6 +165,7 @@ interface RenderCalendarProps {
   onDayClick: (day: number) => void;
   month: number;
   year: number;
+  selectMultipleDays: boolean;
 }
 
 function daysInMonth(month, year) {
@@ -130,7 +206,14 @@ function getMonth(value) {
   return months[value];
 }
 
-function RenderCalendar({ onDayClick, month, year, availableDates }) {
+function RenderCalendar({
+  onDayClick,
+  month,
+  year,
+  availableDates,
+  selectMultipleDays,
+  selectedDays,
+}) {
   let currentYear = year;
   let currentMonth = month;
   let firstDay = new Date(currentYear, currentMonth, 1).getDay();
@@ -155,12 +238,13 @@ function RenderCalendar({ onDayClick, month, year, availableDates }) {
     let cols = [];
     for (let j = 0 - toMonday; j < numCols - toMonday; j++) {
       let cellDay = i * numCols + j + 1;
+
       const handleClick = () => {
         onDayClick(cellDay);
       };
 
       let cellClasses =
-        "border border-slate-100 rounded-sm p-4 flex items-center justify-center aspect-square"; // Base class
+        "border border-slate-100 rounded-md p-4 flex items-center justify-center aspect-square relative"; // Base class
       if (cellDay < 1 || cellDay > dayAmount) {
         cellClasses += " invisible"; // Mark inactive days
       }
@@ -173,9 +257,16 @@ function RenderCalendar({ onDayClick, month, year, availableDates }) {
               ? cellAvailClasses
               : cellNotAvailClasses
           }`}
-          onClick={availableDates.includes(cellDay) ? handleClick : undefined}
+          onClick={handleClick}
         >
           {cellDay}
+          {selectMultipleDays && (
+            <div className='absolute top-0 left-0 w-1/4 h-1/4'>
+              <CheckmarkIcon
+                isChecked={selectedDays.includes(cellDay)}
+              ></CheckmarkIcon>
+            </div>
+          )}
         </div>
       );
     }
@@ -186,5 +277,5 @@ function RenderCalendar({ onDayClick, month, year, availableDates }) {
     );
   }
 
-  return <div className='w-5/6'>{rows}</div>;
+  return <div className='w-full mt-5'>{rows}</div>;
 }
