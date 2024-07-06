@@ -7,12 +7,15 @@ import {
   CardContent,
   Card,
 } from "@/components/ui/card";
+
 import { ResponsiveBar } from "@nivo/bar";
 import { ResponsiveLine } from "@nivo/line";
 import Employees from "./Employees";
 import Bookings from "./Bookings";
 import Services from "./Services";
 import Availabilities from "./Availabilites";
+import OpeningHours from "./OpeningHours";
+import { ClockIcon } from "@radix-ui/react-icons";
 
 export function AdminNav() {
   return (
@@ -40,6 +43,10 @@ export function AdminNav() {
             <TabsTrigger value='services'>
               <BoxIcon className='h-4 w-4' />
               Services
+            </TabsTrigger>
+            <TabsTrigger value='openingHours'>
+              <ClockIcon className='h-4 w-4' />
+              Opening Hours
             </TabsTrigger>
           </TabsList>
           <TabsContent value='dashboard'>
@@ -69,6 +76,12 @@ export function AdminNav() {
             <div className='p-4'>
               <h1 className='text-2xl font-semibold'>Services</h1>
               <Services></Services>
+            </div>
+          </TabsContent>
+          <TabsContent value='openingHours'>
+            <div className='p-4'>
+              <h1 className='text-2xl font-semibold'>Opening Hours</h1>
+              <OpeningHours></OpeningHours>
             </div>
           </TabsContent>
         </Tabs>

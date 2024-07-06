@@ -21,7 +21,10 @@ module.exports = {
           neutral: "#C0A596", //Base neutral color, often used for text and backgrounds
           "base-100": "#D9C8D0", //White or background color.
           "base-content": "#B38B8F", //Color of text and icons on the base color.
-
+          drastic: {
+            DEFAULT: "#FF0000", // Replace with the actual color value for drastic actions
+            foreground: "#FFFFFF", // Replace with the actual foreground color value for drastic actions
+          },
           error: "#E74C3C",
           // ... etc.
         },
