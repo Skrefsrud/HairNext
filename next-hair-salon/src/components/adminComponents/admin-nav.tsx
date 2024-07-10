@@ -16,6 +16,7 @@ import Services from "./Services";
 import Availabilities from "./Availabilites";
 import OpeningHours from "./OpeningHours";
 import { ClockIcon } from "@radix-ui/react-icons";
+import { Dashboard } from "./Dashboard";
 
 export function AdminNav() {
   return (
@@ -52,6 +53,7 @@ export function AdminNav() {
           <TabsContent value='dashboard'>
             <div className='flex flex-col gap-2 p-4'>
               <h1 className='text-2xl font-semibold'>Dashboard</h1>
+              <Dashboard></Dashboard>
             </div>
           </TabsContent>
           <TabsContent value='employees'>

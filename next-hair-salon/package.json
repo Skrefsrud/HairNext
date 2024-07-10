@@ -32,6 +32,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "daisyui": "^4.7.2",
+    "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.0.0",
     "framer-motion": "^11.0.8",
     "gsap": "^3.12.5",
