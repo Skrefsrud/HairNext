@@ -1,15 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/supabaseClient";
-import {
-  parseISO,
-  format,
-  addMinutes,
-  startOfWeek,
-  endOfWeek,
-  getDay as getDateFnsDay,
-} from "date-fns";
+import { format, addMinutes, startOfWeek, endOfWeek } from "date-fns";
+import moment from "moment-timezone";
 
-import { testFunction } from "@/pages/actions/calendar/calendarActions";
+const timeZone = "Europe/Oslo";
+
+// Mapping day names to numeric values
+const dayNameToNumber = {
+  Sunday: 0,
+  Monday: 1,
+  Tuesday: 2,
+  Wednesday: 3,
+  Thursday: 4,
+  Friday: 5,
+  Saturday: 6,
+};
 
 export const WeekCalendar = () => {
   const [storeHours, setStoreHours] = useState([]);
@@ -51,48 +56,58 @@ export const WeekCalendar = () => {
     generateGrid(data, storeHours);
   };
 
-  // Utility function to add minutes to a Date object
-  const addMinutes = (date, minutes) => {
-    return new Date(date.getTime() + minutes * 60000);
-  };
-
-  // Utility function to get the day of the week
-  const getDay = (date) => {
-    // Returns the day of the week: 0 (Sunday) to 6 (Saturday)
-    return date.getDay();
-  };
-
   const generateGrid = (timeSlots, storeHours) => {
     let grid = {};
 
-    // Initialize grid with store hours
+    // Initialize grid with store hours using numeric day values
     storeHours.forEach((day) => {
       if (!day.is_closed) {
         let startTime = new Date(`1970-01-01T${day.opening_time}`);
         let endTime = new Date(`1970-01-01T${day.closing_time}`);
+        const dayOfWeek = dayNameToNumber[day.day_of_week]; // Convert day name to numeric value
+        console.log(
+          `Initializing grid for day ${dayOfWeek} from ${format(
+            startTime,
+            "HH:mm"
+          )} to ${format(endTime, "HH:mm")}`
+        );
         while (startTime < endTime) {
           const time = format(startTime, "HH:mm");
           if (!grid[time]) grid[time] = {};
-          grid[time][day.day_of_week] = {
+          grid[time][dayOfWeek] = {
             available: false,
             time_slot_id: null,
           }; // Initialize with default values
+          console.log(`Initialized ${time} for day ${dayOfWeek}`);
           startTime = addMinutes(startTime, 15);
         }
       }
     });
 
+    console.log("Initialized Grid:", grid);
+
     // Populate grid with time slots
     timeSlots.forEach((slot) => {
-      console.log(slot);
-      const slotDate = new Date(slot.time_stamp); // Parse the ISO string with timezone
-      console.log(slotDate);
-      const day = getDateFnsDay(slotDate); // 0 for Sunday, 1 for Monday, etc.
+      const slotDateUtc = moment.utc(slot.time_stamp).toDate(); // Parse the ISO string as UTC
+      const slotDate = moment(slotDateUtc).tz(timeZone).toDate(); // Convert to local timezone
+      const day = slotDate.getDay(); // 0 for Sunday, 1 for Monday, etc.
       const time = format(slotDate, "HH:mm");
+
+      console.log("Day:", day);
+      console.log("Time:", time);
+      console.log("Grid[time] logging: ", grid[time]);
+      console.log(
+        "Grid Before Update:",
+        grid[time] ? grid[time][day] : "Undefined"
+      );
+
       if (grid[time] && grid[time][day] !== undefined) {
+        console.log("Updating Grid:", time, day, slot.id);
         grid[time][day] = { available: true, time_slot_id: slot.id };
       }
     });
+
+    console.log("Final Grid:", grid);
 
     setGrid(grid);
   };
@@ -101,6 +116,7 @@ export const WeekCalendar = () => {
     const timeSlotId = event.currentTarget.getAttribute("data-time-slot-id");
     console.log("Time Slot ID:", timeSlotId);
   };
+
   return (
     <div className='grid-container p-4'>
       <div className='grid-header grid grid-cols-8 gap-2 bg-gray-200 p-2'>
@@ -128,7 +144,9 @@ export const WeekCalendar = () => {
               <div
                 key={i}
                 className={`grid-cell p-2 ${
-                  grid[time][i + 1]?.available ? "bg-green-200" : "bg-red-200"
+                  grid[time][i + 1]?.available
+                    ? "bg-green-200"
+                    : "bg-red-200 pointer-events-none"
                 }`}
                 data-time-slot-id={grid[time][i + 1]?.time_slot_id || ""}
                 onClick={handleCellClick}
