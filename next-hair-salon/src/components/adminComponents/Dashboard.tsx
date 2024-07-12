@@ -1,5 +1,5 @@
 import { WeekCalendar } from "../bookingComponents/week-calendar/WeekCalendar";
 
 export const Dashboard = () => {
-  return <WeekCalendar></WeekCalendar>;
+  return <WeekCalendar employeeId={1}></WeekCalendar>;
 };
