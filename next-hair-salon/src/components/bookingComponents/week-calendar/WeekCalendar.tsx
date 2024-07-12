@@ -29,10 +29,11 @@ const dayNameToNumber = {
 
 const maxWeeksForward = 4; // Maximum number of weeks a user can navigate forward
 
-export const WeekCalendar = ({ employeeId }) => {
+export const WeekCalendar = ({ employeeId, duration, onSelectTimeSlots }) => {
   const [storeHours, setStoreHours] = useState([]);
   const [grid, setGrid] = useState({});
   const [currentWeek, setCurrentWeek] = useState(new Date());
+  const [hoveredSlots, setHoveredSlots] = useState([]); // State to track hovered slots
 
   useEffect(() => {
     // Fetch store hours and generate grid
@@ -115,8 +116,6 @@ export const WeekCalendar = ({ employeeId }) => {
       }
     });
 
-    console.log("Initialized Grid:", grid);
-
     // Populate grid with time slots and check employee availability
     timeSlots.forEach((slot) => {
       const slotDateUtc = moment.utc(slot.time_stamp).toDate(); // Parse the ISO string as UTC
@@ -126,9 +125,6 @@ export const WeekCalendar = ({ employeeId }) => {
 
       // Mark past time slots as unavailable
       if (isPast(slotDate)) {
-        console.log(
-          `Time slot at ${time} on day ${day} is in the past and will be marked as unavailable.`
-        );
         return;
       }
 
@@ -149,32 +145,29 @@ export const WeekCalendar = ({ employeeId }) => {
           available_employees: availableEmployees, // Store the array of employee IDs
         };
       }
-
-      console.log("Day:", day);
-      console.log("Time:", time);
-      console.log("Grid[time] logging: ", grid[time]);
-      console.log(
-        "Grid Before Update:",
-        grid[time] ? grid[time][day] : "Undefined"
-      );
-
-      if (grid[time] && grid[time][day] !== undefined) {
-        console.log("Updating Grid:", time, day, slot.id);
-      }
     });
-
-    console.log("Final Grid:", grid);
 
     setGrid(grid);
   };
 
-  const handleCellClick = (event) => {
-    const timeSlotId = event.currentTarget.getAttribute("data-time-slot-id");
-    const availableEmployees = event.currentTarget.getAttribute(
-      "data-available-employees"
-    );
-    console.log("Time Slot ID:", timeSlotId);
-    console.log("Available Employees:", availableEmployees.split(","));
+  const handleCellClick = () => {
+    onSelectTimeSlots(hoveredSlots.map((slot) => slot.time_slot_id));
+  };
+
+  const handleCellMouseEnter = (time, day) => {
+    const newHoveredSlots = [];
+    for (let i = 0; i < duration; i++) {
+      const nextTime = addMinutes(new Date(`1970-01-01T${time}`), 15 * i);
+      const formattedTime = format(nextTime, "HH:mm");
+      if (grid[formattedTime] && grid[formattedTime][day]) {
+        newHoveredSlots.push(grid[formattedTime][day]);
+      }
+    }
+    setHoveredSlots(newHoveredSlots);
+  };
+
+  const handleCellMouseLeave = () => {
+    setHoveredSlots([]);
   };
 
   const handlePreviousWeek = () => {
@@ -264,24 +257,25 @@ export const WeekCalendar = ({ employeeId }) => {
                 grid[time][i + 1]?.available_employees || [];
               const shouldDisplay =
                 !employeeId || availableEmployees.includes(employeeId);
+              const isHovered = hoveredSlots.includes(grid[time][i + 1]);
               const cellClass = shouldDisplay
                 ? isAvailable
-                  ? "bg-green-200"
+                  ? isHovered
+                    ? "bg-yellow-200 cursor-pointer"
+                    : "bg-green-200"
                   : "bg-red-200"
                 : "bg-gray-300 opacity-50";
 
               return (
                 <div
                   key={i}
-                  className={`grid-cell p-2 ${cellClass}`}
+                  className={`grid-cell p-2 ${cellClass} h-full w-full flex items-center justify-center`}
                   data-time-slot-id={grid[time][i + 1]?.time_slot_id || ""}
                   data-available-employees={availableEmployees.join(",") || ""}
-                  onClick={shouldDisplay ? handleCellClick : null}
-                >
-                  {isAvailable
-                    ? `Available (ID: ${grid[time][i + 1].time_slot_id})`
-                    : "Unavailable"}
-                </div>
+                  onMouseEnter={() => handleCellMouseEnter(time, i + 1)}
+                  onMouseLeave={handleCellMouseLeave}
+                  onClick={shouldDisplay && isHovered ? handleCellClick : null}
+                ></div>
               );
             })}
           </div>

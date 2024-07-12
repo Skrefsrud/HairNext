@@ -40,6 +40,9 @@ module.exports = {
   },
   theme: {
     extend: {
+      boxShadow: {
+        "white-glow": "0 0 15px rgba(255, 255, 255, 0.8)", // Custom circular white glow effect
+      },
       fontFamily: {
         poppins: ["Poppins", "sans-serif"],
       },

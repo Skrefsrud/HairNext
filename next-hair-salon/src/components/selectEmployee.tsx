@@ -1,7 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CheckmarkIcon } from "./ui/icons/checkmarkIcon";
 import { useState } from "react";
-import { useSpring, animated, config } from "react-spring";
 
 type Employee = {
   id: number;
@@ -13,7 +12,7 @@ type Employee = {
 };
 
 export const SelectEmployee = (props) => {
-  const { employee, onSelect, checkMark, clickable } = props;
+  const { employee, onSelect, checkMark, clickable, selected, dimmed } = props;
   const [isChecked, setIsChecked] = useState(false);
 
   const handleSelect = () => {
@@ -35,10 +34,18 @@ export const SelectEmployee = (props) => {
     return first + sur;
   }
 
+  const opacity = selected
+    ? "opacity-100"
+    : dimmed
+    ? "opacity-50"
+    : "opacity-80";
+
+  const glow = selected ? "shadow-white-glow" : "";
+
   return (
     <div
       style={{ cursor: clickable ? "pointer" : "default" }}
-      className='flex flex-wrap w-24 h-24 relative  '
+      className={`flex flex-wrap w-24 h-24 relative ${opacity} ${glow} rounded-full`}
       onClick={handleSelect}
     >
       {checkMark && (
