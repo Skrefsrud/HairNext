@@ -3,7 +3,7 @@ import { AdminNav } from "@/components/adminComponents/admin-nav";
 
 function AdminPage() {
   return (
-    <div>
+    <div className="w-full h-full">
       <AdminNav />
     </div>
   );

@@ -2,13 +2,14 @@ import { WeekCalendar } from "../bookingComponents/week-calendar/WeekCalendar";
 import { SelectEmployee } from "../selectEmployee";
 import { useState, useEffect } from "react";
 import { fetchEmployees } from "@/pages/actions/employees/fetchEmployees";
+import { Employee } from "@/utils/interfaces";
 
 export const Dashboard = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
     null
   );
-  const [selectedTimeSlots, setSelectedTimeSlots] = useState([]);
+  const [selectedTimeSlots, setSelectedTimeSlots] = useState<number[]>([]);
 
   useEffect(() => {
     const loadEmployees = async () => {
@@ -37,14 +38,14 @@ export const Dashboard = () => {
     setSelectedEmployee(employee);
   };
 
-  const handleSelectTimeSlots = (timeSlotIds) => {
-    console.log("Selected Time Slot IDs:", timeSlotIds);
-    setSelectedTimeSlots(timeSlotIds); // Update the state or perform other actions
+  const handleSelectTimeSlots = (timeSlots: number[]) => {
+    console.log("Selected Time Slots:", timeSlots);
+    setSelectedTimeSlots(timeSlots);
   };
 
   return (
-    <div className='relative'>
-      <div className='flex gap-2 '>
+    <div className="relative w-full h-full">
+      <div className="flex justify-center items-center align-center gap-2 ">
         {employees.map((employee) => (
           <SelectEmployee
             key={employee.id}
