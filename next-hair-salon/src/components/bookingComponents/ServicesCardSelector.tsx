@@ -1,9 +1,7 @@
 // ServicesSelector.tsx
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/supabaseClient";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Spinner } from "@/components/ui/spinner";
+import ServiceCard from "./ServiceCard";
 import { Service } from "@/utils/interfaces";
 
 interface Props {
@@ -14,18 +12,10 @@ interface Props {
   ) => void;
 }
 
-const ServicesSelector: React.FC<Props> = ({ onServicesSubmit }) => {
+const ServicesCardSelector: React.FC<Props> = ({ onServicesSubmit }) => {
   const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>([]);
-
-  const handleCheckboxChange = (serviceId: number) => {
-    setSelectedServiceIds((prevIds) =>
-      prevIds.includes(serviceId)
-        ? prevIds.filter((id) => id !== serviceId)
-        : [...prevIds, serviceId]
-    );
-  };
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -70,39 +60,34 @@ const ServicesSelector: React.FC<Props> = ({ onServicesSubmit }) => {
     return hours * 60 + minutes;
   };
 
-  const formatDuration = (intervalString: string): string => {
-    const [hours, minutes] = intervalString
-      .split(":")
-      .map((part) => part.padStart(2, "0"));
-    return `${hours}:${minutes}`;
+  const handleSelect = (serviceId: number) => {
+    setSelectedServiceIds((prevIds) =>
+      prevIds.includes(serviceId)
+        ? prevIds.filter((id) => id !== serviceId)
+        : [...prevIds, serviceId]
+    );
   };
 
   return (
     <div className="p-4">
       {isLoading ? (
         <div className="flex justify-center items-center">
-          <Spinner /> {/* Loading spinner */}
           <p>Loading services...</p>
         </div>
       ) : (
-        <ul>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {services.map((service) => (
-            <li key={service.id} className="flex items-center mb-2">
-              <Checkbox
-                id={`service-${service.id}`}
-                checked={selectedServiceIds.includes(service.id)}
-                onCheckedChange={() => handleCheckboxChange(service.id)}
-              />
-              <Label htmlFor={`service-${service.id}`} className="ml-2">
-                {service.name} - kr {service.price} (Duration:{" "}
-                {formatDuration(service.time_requirement)})
-              </Label>
-            </li>
+            <ServiceCard
+              key={service.id}
+              service={service}
+              isSelected={selectedServiceIds.includes(service.id)}
+              onSelect={handleSelect}
+            />
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );
 };
 
-export default ServicesSelector;
+export default ServicesCardSelector;

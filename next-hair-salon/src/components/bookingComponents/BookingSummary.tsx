@@ -1,5 +1,6 @@
 // BookingSummary.tsx
 import React from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Service, Employee } from "@/utils/interfaces";
 
 interface BookingSummaryProps {
@@ -25,43 +26,89 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
   };
 
   return (
-    <div>
-      <h3>Booking Summary</h3>
-      <div>
-        <strong>Selected Services:</strong>
-        <ul>
-          {selectedServices.map((service) => (
-            <li key={service.id}>{service.name}</li>
-          ))}
-        </ul>
+    <div className="space-y-4 flex flex-col">
+      <div className="flex gap-4 w-full">
+        <Card className="flex-1">
+          <CardHeader>
+            <CardTitle>Price</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>kr {combinedPrice}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="flex-1">
+          <CardHeader>
+            <CardTitle>Duration</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>{formatDuration(combinedDuration)}</p>
+          </CardContent>
+        </Card>
       </div>
-      <div>
-        <strong>Total Price:</strong> ${combinedPrice}
-      </div>
-      <div>
-        <strong>Total Duration:</strong> {formatDuration(combinedDuration)}
-      </div>
-      <div>
-        <strong>Selected Employee:</strong>{" "}
-        {selectedEmployee ? selectedEmployee.name : "Any"}
-      </div>
-      <div>
-        <strong>Selected Time Slots:</strong>
-        {selectedDateTimes.length > 0 ? (
-          <ul>
-            {selectedDateTimes.map((dateTime, index) => (
-              <li key={index}>
-                {dateTime.toLocaleString("en-US", {
-                  dateStyle: "full",
-                  timeStyle: "short",
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Selected Services</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {selectedServices.length > 0 ? (
+            <ul className="list-disc list-inside">
+              {selectedServices.map((service) => (
+                <li key={service.id}>{service.name}</li>
+              ))}
+            </ul>
+          ) : (
+            <p>No services selected.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Selected Employee</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>{selectedEmployee ? selectedEmployee.first_name : "Any"}</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Valgt tidsperiode</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {selectedDateTimes.length > 0 ? (
+            <div>
+              <p>
+                <strong>Dato:</strong>{" "}
+                {selectedDateTimes[0].toLocaleDateString("nb-NO", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
                 })}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No time slots selected.</p>
-        )}
-      </div>
+              </p>
+              <p>
+                <strong>Tid:</strong>{" "}
+                {selectedDateTimes[0].toLocaleTimeString("nb-NO", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}{" "}
+                -{" "}
+                {selectedDateTimes[
+                  selectedDateTimes.length - 1
+                ].toLocaleTimeString("nb-NO", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+            </div>
+          ) : (
+            <p>Ingen tidsluker valgt.</p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

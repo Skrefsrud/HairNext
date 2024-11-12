@@ -1,11 +1,13 @@
 // EmployeeSelection.tsx
 import React from "react";
 import { Employee } from "@/utils/interfaces";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface EmployeeSelectionProps {
   employees: Employee[];
   selectedEmployee: Employee | null;
-  onSelect: (employee: Employee) => void;
+  onSelect: (employee: Employee) => void; // Ensure employee is non-null
 }
 
 export const EmployeeSelection: React.FC<EmployeeSelectionProps> = ({
@@ -13,25 +15,39 @@ export const EmployeeSelection: React.FC<EmployeeSelectionProps> = ({
   selectedEmployee,
   onSelect,
 }) => {
+  const handleSelect = (employee: Employee) => {
+    if (selectedEmployee?.id === employee.id) {
+      onSelect(employee); // Pass the employee object for deselection
+    } else {
+      onSelect(employee);
+    }
+  };
+
   return (
     <div className="space-y-2">
       {employees.map((employee) => (
-        <button
+        <Button
           key={employee.id}
-          onClick={() => onSelect(employee)}
-          className={`flex items-center p-2 w-full text-left border rounded ${
-            selectedEmployee?.id === employee.id ? "bg-blue-100" : ""
-          }`}
+          onClick={() => handleSelect(employee)}
+          variant={
+            selectedEmployee?.id === employee.id ? "secondary" : "outline"
+          }
+          className="flex items-center w-full justify-start"
         >
-          <img
-            src="/placeholder.svg?height=50&width=50" // Use a default avatar
-            alt={`${employee.first_name} ${employee.surname}`}
-            className="w-10 h-10 rounded-full mr-3"
-          />
+          <Avatar className="mr-3">
+            <AvatarImage
+              src={employee.avatarUrl || "/placeholder.svg"}
+              alt={`${employee.first_name} ${employee.surname}`}
+            />
+            <AvatarFallback>
+              {employee.first_name.charAt(0)}
+              {employee.surname.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
           <span>
             {employee.first_name} {employee.surname}
           </span>
-        </button>
+        </Button>
       ))}
     </div>
   );

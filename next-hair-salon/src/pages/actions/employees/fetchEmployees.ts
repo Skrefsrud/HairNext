@@ -1,21 +1,13 @@
 "use server";
 import { supabase } from "@/utils/supabase/supabaseClient";
-import { cacheEmployee, getEmployeesFromRedis } from "./redisActions";
 import { Employee } from "@/utils/interfaces";
-export async function fetchEmployees() {
-  "use server";
 
+export async function fetchEmployees(): Promise<Employee[]> {
   try {
-    const cachedEmployees = await getEmployeesFromRedis();
-    if (cachedEmployees) {
-      console.log("Found cached employees in Redis");
-      return cachedEmployees;
-    }
-
     const { data, error } = await supabase.from("employees").select("*");
 
     if (error) {
-      throw new ReferenceError(
+      throw new Error(
         `Error fetching employees from Supabase: ${error.message}`
       );
     }
@@ -24,27 +16,9 @@ export async function fetchEmployees() {
       throw new Error("No data received from Supabase");
     }
 
-    const employees: Employee[] = data.map((employee) => {
-      if (!employee) {
-        throw new TypeError("Invalid employee: employee is null or undefined");
-      }
-
-      return employee;
-    });
-
-    employees.forEach((employee) => {
-      cacheEmployee(employee);
-      console.log("Cached employee:", employee);
-    });
-
-    return employees;
+    return data as Employee[];
   } catch (error) {
-    if (error instanceof ReferenceError) {
-      console.error("Error fetching employees:", error.message);
-    } else {
-      console.error("Error fetching employees:", error);
-    }
-
+    console.error("Error fetching employees:", error);
     throw error;
   }
 }

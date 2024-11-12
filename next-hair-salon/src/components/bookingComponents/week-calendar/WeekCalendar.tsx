@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { supabase } from "@/utils/supabase/supabaseClient";
 import {
   format,
@@ -83,110 +83,93 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
   onSelectTimeSlots,
 }) => {
   const [storeHours, setStoreHours] = useState<StoreHour[]>([]);
-  const [grid, setGrid] = useState<{
-    [time: string]: { [day: number]: GridCell };
-  }>({});
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [employeeAvailability, setEmployeeAvailability] = useState<
+    EmployeeAvailability[]
+  >([]);
   const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
   const [hoveredSlots, setHoveredSlots] = useState<GridCell[]>([]); // State to track hovered slots
   const [selectedSlotIds, setSelectedSlotIds] = useState<number[]>([]); // State to track selected slots
-  const [timeSlotIdToTimestamp, setTimeSlotIdToTimestamp] = useState<{
-    [key: number]: Date;
-  }>({}); // Mapping of time_slot_id to timestamp
 
-  // Fetch data on week change or when employeeId changes
+  // Fetch data on week change
   useEffect(() => {
     const fetchData = async () => {
-      await fetchStoreHours();
+      const startOfWeekDate = startOfWeek(currentWeek, { weekStartsOn: 1 });
+      const endOfWeekDate = endOfWeek(currentWeek, { weekStartsOn: 1 });
+
+      // Fetch storeHours and timeSlots concurrently
+      const [
+        { data: storeHoursData, error: storeHoursError },
+        { data: timeSlotsData, error: timeSlotsError },
+      ] = await Promise.all([
+        supabase.from("store_hours").select("*"),
+        supabase
+          .from("time_slot")
+          .select("*")
+          .gte("time_stamp", startOfWeekDate.toISOString())
+          .lte("time_stamp", endOfWeekDate.toISOString()),
+      ]);
+
+      if (storeHoursError || timeSlotsError) {
+        console.error(
+          "Error fetching data:",
+          storeHoursError || timeSlotsError
+        );
+        return;
+      }
+
+      const timeSlotIds = (timeSlotsData as TimeSlot[]).map((slot) => slot.id);
+
+      // Fetch employeeAvailability without filtering by employeeId
+      const {
+        data: employeeAvailabilityData,
+        error: employeeAvailabilityError,
+      } = await supabase
+        .from("employee_availability")
+        .select("*")
+        .in("time_slot_id", timeSlotIds);
+
+      if (employeeAvailabilityError) {
+        console.error(
+          "Error fetching employee availability:",
+          employeeAvailabilityError
+        );
+        return;
+      }
+
+      setStoreHours(storeHoursData as StoreHour[]);
+      setTimeSlots(timeSlotsData as TimeSlot[]);
+      setEmployeeAvailability(
+        employeeAvailabilityData as EmployeeAvailability[]
+      );
     };
 
-    const debounceFetch = setTimeout(fetchData, 300); // Debounce to prevent excessive API calls
+    fetchData();
+  }, [currentWeek]);
 
-    return () => clearTimeout(debounceFetch);
-  }, [currentWeek, employeeId]);
+  // Compute the timeSlotId to timestamp mapping
+  const timeSlotIdToTimestamp = useMemo(() => {
+    const mapping: { [key: number]: Date } = {};
 
-  // Fetch store hours from the database
-  const fetchStoreHours = async () => {
-    const { data, error } = await supabase.from("store_hours").select("*");
-
-    if (error) {
-      console.error("Error fetching store hours:", error);
-      return;
-    }
-
-    setStoreHours(data as StoreHour[]);
-    fetchTimeSlots(data as StoreHour[]);
-  };
-
-  // Fetch time slots for the current week
-  const fetchTimeSlots = async (storeHours: StoreHour[]) => {
-    const startOfWeekDate = startOfWeek(currentWeek, { weekStartsOn: 1 });
-    const endOfWeekDate = endOfWeek(currentWeek, { weekStartsOn: 1 });
-
-    const { data: timeSlots, error: timeSlotsError } = await supabase
-      .from("time_slot")
-      .select("*")
-      .gte("time_stamp", startOfWeekDate.toISOString())
-      .lte("time_stamp", endOfWeekDate.toISOString());
-
-    if (timeSlotsError) {
-      console.error("Error fetching time slots:", timeSlotsError);
-      return;
-    }
-
-    const timeSlotIds = (timeSlots as TimeSlot[]).map((slot) => slot.id);
-
-    // Create a mapping of time_slot_id to timestamp
-    const timeSlotIdToTimestampMap: { [key: number]: Date } = {};
-    (timeSlots as TimeSlot[]).forEach((slot) => {
+    (timeSlots || []).forEach((slot) => {
       const slotDateUtc = moment.utc(slot.time_stamp).toDate(); // Parse as UTC
       const slotDate = moment(slotDateUtc).tz(timeZone).toDate(); // Convert to local timezone
-      timeSlotIdToTimestampMap[slot.id] = slotDate;
+      mapping[slot.id] = slotDate;
     });
-    setTimeSlotIdToTimestamp(timeSlotIdToTimestampMap);
 
-    fetchEmployeeAvailability(timeSlotIds, timeSlots as TimeSlot[], storeHours);
-  };
-
-  // Fetch employee availability for the given time slots
-  const fetchEmployeeAvailability = async (
-    timeSlotIds: number[],
-    timeSlots: TimeSlot[],
-    storeHours: StoreHour[]
-  ) => {
-    let query = supabase
-      .from("employee_availability")
-      .select("*")
-      .in("time_slot_id", timeSlotIds);
-
-    // If employeeId is provided, filter by employeeId
-    if (employeeId) {
-      query = query.eq("employee_id", employeeId);
-    }
-
-    const { data: employeeAvailability, error: employeeAvailabilityError } =
-      await query;
-
-    if (employeeAvailabilityError) {
-      console.error(
-        "Error fetching employee availability:",
-        employeeAvailabilityError
-      );
-      return;
-    }
-
-    generateGrid(
-      timeSlots,
-      storeHours,
-      employeeAvailability as EmployeeAvailability[]
-    );
-  };
+    return mapping;
+  }, [timeSlots]);
 
   // Generate the grid structure for displaying available time slots
-  const generateGrid = (
-    timeSlots: TimeSlot[],
-    storeHours: StoreHour[],
-    employeeAvailability: EmployeeAvailability[]
-  ) => {
+  const grid = useMemo(() => {
+    if (
+      storeHours.length === 0 ||
+      timeSlots.length === 0 ||
+      employeeAvailability.length === 0
+    ) {
+      return {};
+    }
+
     let grid: { [time: string]: { [day: number]: GridCell } } = {};
 
     // Initialize grid with store hours using numeric day values
@@ -234,6 +217,8 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
       }
     });
 
+    const startOfWeekDate = startOfWeek(currentWeek, { weekStartsOn: 1 });
+
     // Populate grid with time slots and check employee availability
     Object.keys(grid).forEach((time) => {
       Object.keys(grid[time]).forEach((dayKey) => {
@@ -257,15 +242,7 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
 
           const availableEmployees = timeSlotAvailabilityMap[slotId] || [];
 
-          let isAvailable = false;
-
-          if (employeeId) {
-            // Check if the specific employee is available
-            isAvailable = availableEmployees.includes(employeeId);
-          } else {
-            // Check if any employee is available
-            isAvailable = availableEmployees.length > 0;
-          }
+          let isAvailable = availableEmployees.length > 0;
 
           if (isAvailable) {
             grid[time][day] = {
@@ -284,93 +261,113 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
       });
     });
 
-    setGrid(grid); // Update the grid state
-  };
+    return grid;
+  }, [
+    storeHours,
+    timeSlots,
+    employeeAvailability,
+    currentWeek,
+    timeSlotDuration,
+  ]);
 
   // Handle click on a cell to select or deselect time slots
-  const handleCellClick = () => {
+  const handleCellClick = useCallback(() => {
     if (hoveredSlots.length > 0) {
-      setSelectedSlotIds((prevSelectedSlotIds) => {
-        const hoveredSlotIds = hoveredSlots.map((slot) => slot.time_slot_id!);
-        const areAllSelected = hoveredSlotIds.every((id) =>
-          prevSelectedSlotIds.includes(id)
-        );
+      const hoveredSlotIds = hoveredSlots.map((slot) => slot.time_slot_id!);
+      const areAllSelected = hoveredSlotIds.every((id) =>
+        selectedSlotIds.includes(id)
+      );
 
-        let newSelectedSlotIds: number[] = [];
+      let newSelectedSlotIds: number[] = [];
 
-        if (areAllSelected) {
-          // Deselect the hovered slots
-          newSelectedSlotIds = [];
-        } else {
-          // Select the hovered slots and deselect any previous selection
-          newSelectedSlotIds = hoveredSlotIds;
-        }
+      if (areAllSelected) {
+        // Deselect the hovered slots
+        newSelectedSlotIds = [];
+      } else {
+        // Select the hovered slots and deselect any previous selection
+        newSelectedSlotIds = hoveredSlotIds;
+      }
 
-        // Get the selected timestamps
-        const selectedTimestamps = newSelectedSlotIds
-          .map((id) => timeSlotIdToTimestamp[id])
-          .filter((date) => date !== undefined);
+      // Get the selected timestamps
+      const selectedTimestamps = newSelectedSlotIds
+        .map((id) => timeSlotIdToTimestamp[id])
+        .filter((date) => date !== undefined);
 
-        // Update the selected time slots
-        onSelectTimeSlots(selectedTimestamps);
-        return newSelectedSlotIds;
-      });
+      // Update the selected slot IDs
+      setSelectedSlotIds(newSelectedSlotIds);
+
+      // Update the selected time slots in the parent component
+      onSelectTimeSlots(selectedTimestamps);
     }
-  };
+  }, [hoveredSlots, timeSlotIdToTimestamp, onSelectTimeSlots, selectedSlotIds]);
 
   // Handle mouse enter event on a cell to track hovered slots
-  const handleCellMouseEnter = (time: string, day: number) => {
-    const newHoveredSlots: GridCell[] = [];
-    let allSlotsAvailable = true;
-    for (let i = 0; i < duration; i++) {
-      const nextTime = addMinutes(
-        new Date(`1970-01-01T${time}`),
-        timeSlotDuration * i
-      );
-      const formattedTime = format(nextTime, "HH:mm");
-      if (
-        grid[formattedTime] &&
-        grid[formattedTime][day] &&
-        grid[formattedTime][day].available
-      ) {
-        newHoveredSlots.push(grid[formattedTime][day]);
-      } else {
-        allSlotsAvailable = false;
-        break;
+  const handleCellMouseEnter = useCallback(
+    (time: string, day: number) => {
+      const newHoveredSlots: GridCell[] = [];
+      let allSlotsAvailable = true;
+      for (let i = 0; i < duration; i++) {
+        const nextTime = addMinutes(
+          new Date(`1970-01-01T${time}`),
+          timeSlotDuration * i
+        );
+        const formattedTime = format(nextTime, "HH:mm");
+        const cell = grid[formattedTime] && grid[formattedTime][day];
+        const isSlotAvailable = cell && cell.available;
+        const isEmployeeAvailable =
+          employeeId == null
+            ? isSlotAvailable
+            : cell &&
+              cell.available_employees &&
+              cell.available_employees.includes(employeeId);
+
+        if (isEmployeeAvailable) {
+          newHoveredSlots.push(cell);
+        } else {
+          allSlotsAvailable = false;
+          break;
+        }
       }
-    }
-    if (allSlotsAvailable) {
-      setHoveredSlots(newHoveredSlots);
-    } else {
-      setHoveredSlots([]);
-    }
-  };
+      if (allSlotsAvailable) {
+        setHoveredSlots(newHoveredSlots);
+      } else {
+        setHoveredSlots([]);
+      }
+    },
+    [grid, duration, employeeId]
+  );
 
   // Handle mouse leave event to clear hovered slots
-  const handleCellMouseLeave = () => {
+  const handleCellMouseLeave = useCallback(() => {
     setHoveredSlots([]);
-  };
+  }, []);
 
   // Navigate to the previous week
-  const handlePreviousWeek = () => {
+  const handlePreviousWeek = useCallback(() => {
     const previousWeek = addWeeks(currentWeek, -1);
     if (!isBefore(previousWeek, startOfToday())) {
       setCurrentWeek(previousWeek);
     }
-  };
+  }, [currentWeek]);
 
   // Navigate to the next week
-  const handleNextWeek = () => {
+  const handleNextWeek = useCallback(() => {
     const nextWeek = addWeeks(currentWeek, 1);
     const maxDate = addWeeks(startOfToday(), maxWeeksForward);
     if (!isAfter(nextWeek, maxDate)) {
       setCurrentWeek(nextWeek);
     }
-  };
+  }, [currentWeek]);
 
   // Calculate the start and end dates for the current week
-  const startOfWeekDate = startOfWeek(currentWeek, { weekStartsOn: 1 });
-  const endOfWeekDate = endOfWeek(currentWeek, { weekStartsOn: 1 });
+  const startOfWeekDate = useMemo(
+    () => startOfWeek(currentWeek, { weekStartsOn: 1 }),
+    [currentWeek]
+  );
+  const endOfWeekDate = useMemo(
+    () => endOfWeek(currentWeek, { weekStartsOn: 1 }),
+    [currentWeek]
+  );
   const currentISOWeek = getISOWeek(currentWeek);
   const weekRangeText = `${format(startOfWeekDate, "MMM dd")} - ${format(
     endOfWeekDate,
@@ -441,7 +438,7 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
             ))}
           </div>
         </div>
-        <ScrollArea className="h-[500px]">
+        <ScrollArea className="h-[380px]">
           <div className="grid grid-cols-[auto_1fr]">
             <div className="border-r border-gray-200 dark:border-gray-700 w-20">
               {Object.keys(grid).map((time) => (
@@ -463,7 +460,16 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
                 >
                   {Object.keys(grid).map((time) => {
                     const cell = grid[time] && grid[time][i + 1];
-                    const isAvailable = cell && cell.available;
+                    const isSlotAvailable = cell && cell.available;
+
+                    // Determine if the specific employee is available in this slot
+                    const isEmployeeAvailable =
+                      employeeId == null
+                        ? isSlotAvailable
+                        : cell &&
+                          cell.available_employees &&
+                          cell.available_employees.includes(employeeId);
+
                     const isHovered = cell && hoveredSlots.includes(cell);
                     const isSelected =
                       cell &&
@@ -475,7 +481,7 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
                         key={`${time}-${i}`}
                         className={cn(
                           "h-12 border-t border-gray-200 dark:border-gray-700 flex items-center justify-center transition-colors",
-                          isAvailable
+                          isEmployeeAvailable
                             ? isSelected
                               ? "bg-blue-200 dark:bg-blue-900 cursor-pointer"
                               : isHovered
@@ -485,9 +491,11 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
                         )}
                         onMouseEnter={() => handleCellMouseEnter(time, i + 1)}
                         onMouseLeave={handleCellMouseLeave}
-                        onClick={isAvailable ? handleCellClick : undefined}
+                        onClick={
+                          isEmployeeAvailable ? handleCellClick : undefined
+                        }
                       >
-                        {isAvailable && (
+                        {isEmployeeAvailable && (
                           <>
                             {isSelected ? (
                               <div className="h-2 w-2 rounded-full bg-blue-500 dark:bg-blue-400" />
