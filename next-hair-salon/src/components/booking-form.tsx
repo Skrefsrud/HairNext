@@ -1,73 +1,114 @@
 "use client";
-// @ts-check
 
+import React, { useState } from "react";
 import CalendarSelect from "./bookingComponents/CalendarSelect";
 import SlideInContainer from "./SlideInContainer";
-import React, { useState } from "react";
 import Stats from "./Stats";
 import TimeSelector from "./bookingComponents/TimeSelect";
 import TypeSelector from "./bookingComponents/TypeSelector";
 import { BookingType } from "./bookingComponents/enums";
 import ServicesSelector from "./bookingComponents/ServiceSelector";
 
+enum AnimationDirection {
+  TOP = "top",
+  BOTTOM = "bottom",
+}
+
+interface Service {
+  service_id: number;
+  name: string;
+  price: number;
+  description: string;
+  time_requirement: string | number;
+}
+
+interface ServicesData {
+  services: Service[];
+  price: number;
+  duration: number | string;
+}
+
+interface BookingData {
+  employee: {
+    id: number | null;
+    employee_name: string | null;
+  };
+  bookingDetails: {
+    date: Date | null;
+    time: string[] | null;
+    bookingType: BookingType[] | null;
+    bookingDuration: number | null;
+  };
+  customer: {
+    customer_name: string | null;
+    phoneNumber: number | null;
+    comment: string | null;
+  };
+}
+
+interface UiState {
+  selectedOption: number;
+  previousOption: number | null;
+  direction: AnimationDirection;
+}
+
+interface BookingStepProps {
+  selectedOption: number;
+  stepIndex: number;
+  direction: AnimationDirection;
+  children: React.ReactNode;
+}
+
+const BookingStep: React.FC<BookingStepProps> = ({
+  selectedOption,
+  stepIndex,
+  direction,
+  children,
+}) => {
+  return selectedOption === stepIndex ? (
+    <SlideInContainer direction={direction}>{children}</SlideInContainer>
+  ) : null;
+};
+
 export function BookingForm() {
-  enum AnimationDirection {
-    TOP = "top",
-    BOTTOM = "bottom",
-  }
-
-  interface Service {
-    service_id: number; // Adjust the types as needed
-    name: string;
-    price: number;
-    description: string;
-    time_requirement: string | number; // Or whatever type represents the duration
-  }
-
-  interface ServicesData {
-    services: Service[];
-    price: number;
-    duration: number | string; // Assuming combined duration might be a string
-  }
-  //BookingData state
-  const [bookingData, setBookingData] = useState({
+  // BookingData state
+  const [bookingData, setBookingData] = useState<BookingData>({
     employee: {
-      id: null as Number,
-      employee_name: null as String,
+      id: null,
+      employee_name: null,
     },
     bookingDetails: {
-      date: null as Date,
-      time: null as String[],
-      bookingType: null as BookingType[],
-      bookingDuration: null as Number,
+      date: null,
+      time: null,
+      bookingType: null,
+      bookingDuration: null,
     },
     customer: {
-      customer_name: null as String,
-      phoneNumber: null as Number,
-      comment: null as String,
+      customer_name: null,
+      phoneNumber: null,
+      comment: null,
     },
   });
 
-  //Access the bookingData objects
+  // Access the bookingData objects
   const { employee, bookingDetails, customer } = bookingData;
 
-  //UI Component State
-  const [uiState, setUiState] = useState({
+  // UI Component State
+  const [uiState, setUiState] = useState<UiState>({
     selectedOption: 0,
     previousOption: null,
     direction: AnimationDirection.BOTTOM,
   });
 
-  //Access the states
+  // Access the states
   const { selectedOption, previousOption, direction } = uiState;
 
   const [servicesData, setServicesData] = useState<ServicesData | null>(null);
 
-  //Handling the selections
-
+  // Handling the selections
   const handleTypeSelection = (
     selectedTypes: BookingType[],
-    intDuration: Number
+    intDuration: number
   ) => {
     updateBookingType(selectedTypes);
     updateBookingDuration(intDuration);
@@ -86,45 +127,40 @@ export function BookingForm() {
     incSelectedOption();
   };
 
-  const handleDateSelection = (selectedDate: Date, displayDate: String) => {
+  const handleDateSelection = (selectedDate: Date, displayDate: string) => {
     updateBookingDate(selectedDate);
+    incSelectedOption();
   };
 
-  //Handling what component should be rendered based on the selectedOption variable
-  const BookingStep = ({ selectedOption, stepIndex, direction, children }) => {
-    return (
-      selectedOption === stepIndex && (
-        <SlideInContainer direction={direction}>{children}</SlideInContainer>
-      )
-    );
-  };
-
-  //helper funcitions
-
+  // Helper functions
   function incSelectedOption() {
-    setUiState({
-      ...uiState,
+    setUiState((prevUiState) => ({
+      ...prevUiState,
       direction: AnimationDirection.BOTTOM,
-      selectedOption: selectedOption + 1,
-    });
+      previousOption: prevUiState.selectedOption,
+      selectedOption: prevUiState.selectedOption + 1,
+    }));
   }
+
   function decSelectedOption() {
-    setUiState({
-      ...uiState,
+    setUiState((prevUiState) => ({
+      ...prevUiState,
       direction: AnimationDirection.TOP,
-      selectedOption: selectedOption - 1,
-    });
+      previousOption: prevUiState.selectedOption,
+      selectedOption: prevUiState.selectedOption - 1,
+    }));
   }
 
   function updateBookingType(newBookingType: BookingType | BookingType[]) {
     setBookingData((prevBookingData) => ({
-      ...prevBookingData, // Keep everything in bookingData
+      ...prevBookingData,
       bookingDetails: {
-        ...prevBookingData.bookingDetails, // Keep everything in bookingDetails
-        bookingType: newBookingType, // Update only bookingType
+        ...prevBookingData.bookingDetails,
+        bookingType: newBookingType,
       },
     }));
   }
+
   function updateBookingDuration(newDuration: number) {
     setBookingData((prevBookingData) => ({
       ...prevBookingData,
@@ -134,6 +170,7 @@ export function BookingForm() {
       },
     }));
   }
+
   function updateBookingDate(newDate: Date) {
     setBookingData((prevBookingData) => ({
       ...prevBookingData,
@@ -145,15 +182,13 @@ export function BookingForm() {
   }
 
   return (
-    <div className='bg-white w-1/2 h-2/3'>
+    <div className="bg-white w-1/2 h-2/3">
       <BookingStep
         selectedOption={selectedOption}
         stepIndex={0}
         direction={direction}
       >
-        <ServicesSelector
-          onServicesSubmit={handleServicesSelected}
-        ></ServicesSelector>
+        <ServicesSelector onServicesSubmit={handleServicesSelected} />
       </BookingStep>
       <BookingStep
         selectedOption={selectedOption}
@@ -162,13 +197,12 @@ export function BookingForm() {
       >
         <CalendarSelect onSelect={handleDateSelection} />
       </BookingStep>
-
       <BookingStep
         selectedOption={selectedOption}
         stepIndex={2}
         direction={direction}
       >
-        <TimeSelector></TimeSelector>
+        <TimeSelector />
       </BookingStep>
     </div>
   );

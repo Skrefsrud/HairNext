@@ -1,15 +1,10 @@
+// ServicesSelector.tsx
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/supabaseClient";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-
-interface Service {
-  service_id: number;
-  name: string;
-  price: number;
-  description: string;
-  time_requirement: string;
-}
+import { Checkbox } from "@/components/ui/checkbox";
+import { Spinner } from "@/components/ui/spinner";
+import { Service } from "@/utils/interfaces";
 
 interface Props {
   onServicesSubmit: (
@@ -19,20 +14,17 @@ interface Props {
   ) => void;
 }
 
-const ServicesSelector = ({ onServicesSubmit }: Props) => {
+const ServicesSelector: React.FC<Props> = ({ onServicesSubmit }) => {
   const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>([]);
-  const [selectedServices, setSelectedServices] = useState<Service[]>([]);
 
   const handleCheckboxChange = (serviceId: number) => {
-    setSelectedServiceIds((prevIds) => {
-      if (prevIds.includes(serviceId)) {
-        return prevIds.filter((id) => id !== serviceId);
-      } else {
-        return [...prevIds, serviceId];
-      }
-    });
+    setSelectedServiceIds((prevIds) =>
+      prevIds.includes(serviceId)
+        ? prevIds.filter((id) => id !== serviceId)
+        : [...prevIds, serviceId]
+    );
   };
 
   useEffect(() => {
@@ -40,13 +32,12 @@ const ServicesSelector = ({ onServicesSubmit }: Props) => {
       setIsLoading(true);
       const { data, error } = await supabase
         .from("services")
-        .select("service_id, name, price, description, time_requirement");
+        .select("id, name, price, description, time_requirement");
 
       if (error) {
         console.error(error);
-        // Handle error gracefully
       } else {
-        setServices(data);
+        setServices(data as Service[]);
       }
       setIsLoading(false);
     };
@@ -56,66 +47,60 @@ const ServicesSelector = ({ onServicesSubmit }: Props) => {
 
   useEffect(() => {
     const newSelectedServices = services.filter((service) =>
-      selectedServiceIds.includes(service.service_id)
+      selectedServiceIds.includes(service.id)
     );
-    setSelectedServices(newSelectedServices);
-  }, [selectedServiceIds, services]);
 
-  const handleSubmit = () => {
-    let combinedPrice = selectedServices.reduce(
+    const combinedPrice = newSelectedServices.reduce(
       (sum, service) => sum + service.price,
       0
     );
 
-    let combinedDuration = 0;
-    selectedServices.forEach((service) => {
-      combinedDuration += parseInterval(service.time_requirement);
-    });
+    const combinedDuration = newSelectedServices.reduce(
+      (total, service) => total + parseInterval(service.time_requirement),
+      0
+    );
 
-    onServicesSubmit(selectedServices, combinedPrice, combinedDuration);
-  };
+    onServicesSubmit(newSelectedServices, combinedPrice, combinedDuration);
+  }, [selectedServiceIds, services]);
 
   const parseInterval = (intervalString: string): number => {
-    const parts = intervalString.split(":");
-    let totalMinutes = 0;
-    for (let i = 0; i < parts.length; i++) {
-      const value = parseInt(parts[i]);
-      //Pars[0] is hours
-      if (i === 0) {
-        totalMinutes += value * 60;
-        //Parts[1] is minutes
-      } else if (i === 1) {
-        totalMinutes += value;
-      }
-    }
-    return totalMinutes;
+    const [hours, minutes] = intervalString
+      .split(":")
+      .map((part) => parseInt(part, 10));
+    return hours * 60 + minutes;
+  };
+
+  const formatDuration = (intervalString: string): string => {
+    const [hours, minutes] = intervalString
+      .split(":")
+      .map((part) => part.padStart(2, "0"));
+    return `${hours}:${minutes}`;
   };
 
   return (
-    <div>
+    <div className="p-4">
       {isLoading ? (
-        <p>Loading services...</p>
+        <div className="flex justify-center items-center">
+          <Spinner /> {/* Loading spinner */}
+          <p>Loading services...</p>
+        </div>
       ) : (
         <ul>
           {services.map((service) => (
-            <li key={service.service_id}>
-              <input
-                id={service.name}
-                className='checkbox checkbox-primary'
-                type='checkbox'
-                value={service.service_id}
-                onChange={() => handleCheckboxChange(service.service_id)}
-                checked={selectedServiceIds.includes(service.service_id)}
+            <li key={service.id} className="flex items-center mb-2">
+              <Checkbox
+                id={`service-${service.id}`}
+                checked={selectedServiceIds.includes(service.id)}
+                onCheckedChange={() => handleCheckboxChange(service.id)}
               />
-              <Label htmlFor={service.name}>
-                {service.name} - {service.price} (Duration:{" "}
-                {service.time_requirement})
+              <Label htmlFor={`service-${service.id}`} className="ml-2">
+                {service.name} - kr {service.price} (Duration:{" "}
+                {formatDuration(service.time_requirement)})
               </Label>
             </li>
           ))}
         </ul>
       )}
-      <Button onClick={handleSubmit}>Next</Button>
     </div>
   );
 };

@@ -11,28 +11,30 @@ export const fontSans = FontSans({
   variable: "--font-sans",
 });
 
+export const metadata: Metadata = {
+  title: "HairCut",
+  description: "Hair Salon",
+  icons: {
+    icon: "/favicon.ico",
+  },
+};
+
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang='en' data-theme='mytheme'>
-      <head>
-        <title>HairCut</title>
-        <meta name='description' content='hairSaloon!"' />
-        <link rel='icon' href='/favicon.ico' />
-      </head>
-
+    <html lang="en" data-theme="mytheme">
       <body
         className={cn(
-          "min-h-screen bg-background font-sans antialiased my-gradient",
-          fontSans.variable
+          fontSans.variable,
+          "min-h-screen bg-background font-sans antialiased my-gradient"
         )}
       >
-        <Header></Header>
-        <main>{children}</main>
-        <Footer></Footer>
+        <Header />
+        <main className="mx-auto min-h-screen">{children}</main>
+        <Footer />
       </body>
     </html>
   );
