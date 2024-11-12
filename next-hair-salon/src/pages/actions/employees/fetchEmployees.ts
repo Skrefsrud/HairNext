@@ -1,15 +1,7 @@
 "use server";
 import { supabase } from "@/utils/supabase/supabaseClient";
 import { cacheEmployee, getEmployeesFromRedis } from "./redisActions";
-
-interface Employee {
-  id: number;
-  first_name: string;
-  surname: string;
-  mobile: string;
-  email: string;
-  role: string;
-}
+import { Employee } from "@/utils/interfaces";
 export async function fetchEmployees() {
   "use server";
 

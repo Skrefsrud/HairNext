@@ -46,8 +46,7 @@ const dayNameToNumber: DayNameToNumber = {
 interface WeekCalendarProps {
   employeeId?: number; // Optional employeeId
   duration: number; // Number of slots (each slot is 15 minutes)
-  onSelectTimeSlots: (timeSlots: number[]) => void;
-  onNext: (selectedTimestamps: Date[]) => void; // New prop to handle Next button click
+  onSelectTimeSlots: (selectedTimestamps: Date[]) => void; // Pass selected timestamps
 }
 
 interface StoreHour {
@@ -82,7 +81,6 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
   employeeId,
   duration, // Number of slots
   onSelectTimeSlots,
-  onNext, // New prop
 }) => {
   const [storeHours, setStoreHours] = useState<StoreHour[]>([]);
   const [grid, setGrid] = useState<{
@@ -298,7 +296,7 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
           prevSelectedSlotIds.includes(id)
         );
 
-        let newSelectedSlotIds;
+        let newSelectedSlotIds: number[] = [];
 
         if (areAllSelected) {
           // Deselect the hovered slots
@@ -308,8 +306,13 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
           newSelectedSlotIds = hoveredSlotIds;
         }
 
+        // Get the selected timestamps
+        const selectedTimestamps = newSelectedSlotIds
+          .map((id) => timeSlotIdToTimestamp[id])
+          .filter((date) => date !== undefined);
+
         // Update the selected time slots
-        onSelectTimeSlots(newSelectedSlotIds);
+        onSelectTimeSlots(selectedTimestamps);
         return newSelectedSlotIds;
       });
     }
@@ -346,16 +349,6 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
   // Handle mouse leave event to clear hovered slots
   const handleCellMouseLeave = () => {
     setHoveredSlots([]);
-  };
-
-  // Handle Next button click
-  const handleNextClick = () => {
-    if (selectedSlotIds.length > 0) {
-      const selectedTimestamps = selectedSlotIds
-        .map((id) => timeSlotIdToTimestamp[id])
-        .filter((date) => date !== undefined);
-      onNext(selectedTimestamps);
-    }
   };
 
   // Navigate to the previous week
@@ -538,15 +531,6 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
             <span className="text-gray-600 dark:text-gray-300">Selected</span>
           </div>
         </div>
-        {/* Added Next button */}
-        <Button
-          variant="default"
-          size="sm"
-          onClick={handleNextClick}
-          disabled={selectedSlotIds.length === 0}
-        >
-          Next
-        </Button>
       </CardFooter>
     </Card>
   );

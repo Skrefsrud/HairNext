@@ -5,6 +5,7 @@ export interface Employee {
   mobile: string;
   email: string;
   role: string;
+  image_path: string;
 }
 
 // interfaces.ts
@@ -51,4 +52,12 @@ export interface TimeSlotGridProps {
   timeSlots: TimeSlot[];
   employeeAvailability: EmployeeAvailability[];
   onSlotSelect: (selectedSlotIds: number[]) => void;
+}
+
+export interface Service {
+  id: number;
+  name: string;
+  price: number;
+  description: string;
+  time_requirement: string; // In format "HH:mm:ss"
 }

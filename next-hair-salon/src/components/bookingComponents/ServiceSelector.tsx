@@ -1,15 +1,8 @@
+// ServicesSelector.tsx
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/supabaseClient";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-
-interface Service {
-  id: number;
-  name: string;
-  price: number;
-  description: string;
-  time_requirement: string;
-}
+import { Service } from "@/utils/interfaces";
 
 interface Props {
   onServicesSubmit: (
@@ -19,11 +12,10 @@ interface Props {
   ) => void;
 }
 
-const ServicesSelector = ({ onServicesSubmit }: Props) => {
+const ServicesSelector: React.FC<Props> = ({ onServicesSubmit }) => {
   const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>([]);
-  const [selectedServices, setSelectedServices] = useState<Service[]>([]);
 
   const handleCheckboxChange = (serviceId: number) => {
     setSelectedServiceIds((prevIds) => {
@@ -44,9 +36,8 @@ const ServicesSelector = ({ onServicesSubmit }: Props) => {
 
       if (error) {
         console.error(error);
-        // Handle error gracefully
       } else {
-        setServices(data);
+        setServices(data as Service[]);
       }
       setIsLoading(false);
     };
@@ -58,37 +49,25 @@ const ServicesSelector = ({ onServicesSubmit }: Props) => {
     const newSelectedServices = services.filter((service) =>
       selectedServiceIds.includes(service.id)
     );
-    setSelectedServices(newSelectedServices);
-  }, [selectedServiceIds, services]);
 
-  const handleSubmit = () => {
-    let combinedPrice = selectedServices.reduce(
+    const combinedPrice = newSelectedServices.reduce(
       (sum, service) => sum + service.price,
       0
     );
 
-    let combinedDuration = 0;
-    selectedServices.forEach((service) => {
-      combinedDuration += parseInterval(service.time_requirement);
-    });
+    const combinedDuration = newSelectedServices.reduce(
+      (total, service) => total + parseInterval(service.time_requirement),
+      0
+    );
 
-    onServicesSubmit(selectedServices, combinedPrice, combinedDuration);
-  };
+    onServicesSubmit(newSelectedServices, combinedPrice, combinedDuration);
+  }, [selectedServiceIds, services]); // Removed onServicesSubmit from dependencies
 
   const parseInterval = (intervalString: string): number => {
-    const parts = intervalString.split(":");
-    let totalMinutes = 0;
-    for (let i = 0; i < parts.length; i++) {
-      const value = parseInt(parts[i]);
-      //Pars[0] is hours
-      if (i === 0) {
-        totalMinutes += value * 60;
-        //Parts[1] is minutes
-      } else if (i === 1) {
-        totalMinutes += value;
-      }
-    }
-    return totalMinutes;
+    const [hours, minutes, seconds] = intervalString
+      .split(":")
+      .map((part) => parseInt(part, 10));
+    return hours * 60 + minutes + seconds / 60;
   };
 
   return (
@@ -100,22 +79,20 @@ const ServicesSelector = ({ onServicesSubmit }: Props) => {
           {services.map((service) => (
             <li key={service.id}>
               <input
-                id={service.name}
-                className='checkbox checkbox-primary'
-                type='checkbox'
+                id={`service-${service.id}`}
+                type="checkbox"
                 value={service.id}
                 onChange={() => handleCheckboxChange(service.id)}
                 checked={selectedServiceIds.includes(service.id)}
               />
-              <Label htmlFor={service.name}>
-                {service.name} - {service.price} (Duration:{" "}
+              <Label htmlFor={`service-${service.id}`}>
+                {service.name} - ${service.price} (Duration:{" "}
                 {service.time_requirement})
               </Label>
             </li>
           ))}
         </ul>
       )}
-      <Button onClick={handleSubmit}>Next</Button>
     </div>
   );
 };
