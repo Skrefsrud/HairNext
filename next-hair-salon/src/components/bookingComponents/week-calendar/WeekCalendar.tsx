@@ -227,8 +227,8 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
         const date = addMinutes(
           startOfWeekDate,
           day * 24 * 60 + // Days to minutes
-            parseInt(time.split(":")[0]) * 60 + // Hours to minutes
-            parseInt(time.split(":")[1]) // Minutes
+          parseInt(time.split(":")[0]) * 60 + // Hours to minutes
+          parseInt(time.split(":")[1]) // Minutes
         );
 
         const timeKey = `${format(date, "yyyy-MM-dd HH:mm")}`;
@@ -318,8 +318,8 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
           employeeId == null
             ? isSlotAvailable
             : cell &&
-              cell.available_employees &&
-              cell.available_employees.includes(employeeId);
+            cell.available_employees &&
+            cell.available_employees.includes(employeeId);
 
         if (isEmployeeAvailable) {
           newHoveredSlots.push(cell);
@@ -438,7 +438,7 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
             ))}
           </div>
         </div>
-        <ScrollArea className="h-[380px]">
+        <ScrollArea className="h-[500px]">
           <div className="grid grid-cols-[auto_1fr]">
             <div className="border-r border-gray-200 dark:border-gray-700 w-20">
               {Object.keys(grid).map((time) => (
@@ -467,8 +467,8 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
                       employeeId == null
                         ? isSlotAvailable
                         : cell &&
-                          cell.available_employees &&
-                          cell.available_employees.includes(employeeId);
+                        cell.available_employees &&
+                        cell.available_employees.includes(employeeId);
 
                     const isHovered = cell && hoveredSlots.includes(cell);
                     const isSelected =
@@ -485,8 +485,8 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
                             ? isSelected
                               ? "bg-blue-200 dark:bg-blue-900 cursor-pointer"
                               : isHovered
-                              ? "bg-blue-100 dark:bg-blue-900/30 cursor-pointer"
-                              : "bg-green-50 hover:bg-blue-100 dark:bg-green-900/20 dark:hover:bg-blue-900/30 cursor-pointer"
+                                ? "bg-blue-100 dark:bg-blue-900/30 cursor-pointer"
+                                : "bg-green-50 hover:bg-blue-100 dark:bg-green-900/20 dark:hover:bg-blue-900/30 cursor-pointer"
                             : "bg-gray-50 dark:bg-gray-800/50"
                         )}
                         onMouseEnter={() => handleCellMouseEnter(time, i + 1)}

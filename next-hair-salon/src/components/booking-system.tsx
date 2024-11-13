@@ -94,7 +94,24 @@ export default function BookingSystemComponent() {
     <div className="container mx-auto p-4 h-full flex items-center justify-center">
       <Card className="w-full max-w-6xl bg-slate-100 shadow-lg">
         <CardHeader>
-          <CardTitle>Book an Appointment</CardTitle>
+
+          <div className="flex justify-between space-x-4">
+            {stage === 2 && (
+              <Button onClick={handleBack} variant="outline">
+                Back
+              </Button>
+            )}
+            <Button
+              onClick={stage === 1 ? handleNext : handleConfirmBooking}
+              className="ml-auto"
+              disabled={
+                (stage === 1 && selectedServices.length === 0) ||
+                (stage === 2 && selectedDateTimes.length === 0)
+              }
+            >
+              {stage === 1 ? "Next" : "Confirm Booking"}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -151,23 +168,7 @@ export default function BookingSystemComponent() {
             </div>
           </div>
         </CardContent>
-        <CardFooter className="flex justify-between">
-          {stage === 2 && (
-            <Button onClick={handleBack} variant="outline">
-              Back
-            </Button>
-          )}
-          <Button
-            onClick={stage === 1 ? handleNext : handleConfirmBooking}
-            className="ml-auto"
-            disabled={
-              (stage === 1 && selectedServices.length === 0) ||
-              (stage === 2 && selectedDateTimes.length === 0)
-            }
-          >
-            {stage === 1 ? "Next" : "Confirm Booking"}
-          </Button>
-        </CardFooter>
+
       </Card>
     </div>
   );
